@@ -30,7 +30,20 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     }
   }`
   
-  const posts = await client.fetch(query)
+const posts = await client.fetch(query)
+  
+  // Recursive function to transform comments at any nesting level
+  const transformComments = (comments: any[]): any[] => {
+    if (!comments || comments.length === 0) return []
+    
+    return comments.map((comment: any) => ({
+      id: comment._key,
+      author: comment.author,
+      text: comment.text,
+      date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
+      replies: transformComments(comment.replies || [])
+    }))
+  }
   
   // Transform Sanity data to match our BlogPost type
   return posts.map((post: any) => ({
@@ -40,24 +53,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     author: post.author,
     content: post.content,
     heroImage: post.heroImage || '/images/unnamed.jpg',
-    comments: post.comments?.map((comment: any) => ({
-      id: comment._key,
-      author: comment.author,
-      text: comment.text,
-      date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
-      replies: comment.replies?.map((reply: any) => ({
-        id: reply._key,
-        author: reply.author,
-        text: reply.text,
-        date: new Date(reply.date).toISOString().split('T')[0].replace(/-/g, '.'),
-        replies: reply.replies?.map((r: any) => ({
-          id: r._key,
-          author: r.author,
-          text: r.text,
-          date: new Date(r.date).toISOString().split('T')[0].replace(/-/g, '.'),
-        })) || []
-      })) || []
-    })) || []
+    comments: transformComments(post.comments || [])
   }))
 }
 
@@ -90,7 +86,20 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     }
   }`
   
-  const posts = await client.fetch(query)
+const posts = await client.fetch(query)
+  
+  // Recursive function to transform comments at any nesting level
+  const transformComments = (comments: any[]): any[] => {
+    if (!comments || comments.length === 0) return []
+    
+    return comments.map((comment: any) => ({
+      id: comment._key,
+      author: comment.author,
+      text: comment.text,
+      date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
+      replies: transformComments(comment.replies || [])
+    }))
+  }
   
   // Transform Sanity data to match our BlogPost type
   return posts.map((post: any) => ({
@@ -100,24 +109,7 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     author: post.author,
     content: post.content,
     heroImage: post.heroImage || '/images/unnamed.jpg',
-    comments: post.comments?.map((comment: any) => ({
-      id: comment._key,
-      author: comment.author,
-      text: comment.text,
-      date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
-      replies: comment.replies?.map((reply: any) => ({
-        id: reply._key,
-        author: reply.author,
-        text: reply.text,
-        date: new Date(reply.date).toISOString().split('T')[0].replace(/-/g, '.'),
-        replies: reply.replies?.map((r: any) => ({
-          id: r._key,
-          author: r.author,
-          text: r.text,
-          date: new Date(r.date).toISOString().split('T')[0].replace(/-/g, '.'),
-        })) || []
-      })) || []
-    })) || []
+    comments: transformComments(post.comments || [])
   }))
 }
 
