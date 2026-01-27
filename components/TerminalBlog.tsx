@@ -9,7 +9,7 @@ import BlogScreen from './BlogScreen/BlogScreen'
 import LoginDropdown from './UserAuth/LoginDropdown'
 import UserInfo from './UserAuth/UserInfo'
 import { blogPosts, secretBlogPosts, asciiArt, secretAsciiArt } from '@/data/blogData'
-import { getAllPosts, getSecretPosts, buildCommentPath } from '@/lib/sanity.queries'
+import { getAllPosts, getSecretPosts } from '@/lib/sanity.queries'
 
 export default function TerminalBlog() {
   // Clerk authentication
@@ -200,9 +200,27 @@ export default function TerminalBlog() {
     if (post._id) {
       try {
         // Build the path to the comment's replies array
-        const commentPath = buildCommentPath(post.comments, commentId)
+        // The comment.id IS the _key from Sanity (mapped in transformation)
+        const buildPath = (comments: any[], targetId: string, basePath: string = 'comments'): string | null => {
+          for (const comment of comments) {
+            if (comment.id === targetId) {
+              // Found the target comment, return path to its replies array
+              return `${basePath}[_key=="${comment.id}"].replies`
+            }
+            if (comment.replies && comment.replies.length > 0) {
+              // Recursively search nested replies
+              const nestedPath = buildPath(comment.replies, targetId, `${basePath}[_key=="${comment.id}"].replies`)
+              if (nestedPath) return nestedPath
+            }
+          }
+          return null
+        }
+        
+        const commentPath = buildPath(post.comments, commentId)
         
         if (commentPath) {
+          console.log('Built comment path:', commentPath)
+          
           const response = await fetch('/api/comments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -221,7 +239,7 @@ export default function TerminalBlog() {
           
           console.log('Reply saved to Sanity')
         } else {
-          console.error('Could not find comment path')
+          console.error('Could not find comment path for id:', commentId)
         }
       } catch (error) {
         console.error('Error saving reply:', error)
