@@ -60,8 +60,8 @@ body {
   z-index: 1;
 }
 
-/* CRT scanline effect */
-body::before {
+/* CRT scanline effect - exclude studio */
+body:not(.studio-body)::before {
   content: "";
   position: fixed;
   top: 0;
@@ -79,6 +79,7 @@ body::before {
   z-index: 10000;
   animation: scanline-move 8s linear infinite;
 }
+
 
 @keyframes scanline-move {
   0% { transform: translateY(0); }

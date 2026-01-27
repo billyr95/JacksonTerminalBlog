@@ -1,11 +1,21 @@
 'use client'
 
+import { useEffect, useRef } from 'react'
+
 interface LoginSequenceProps {
   isSecret: boolean
   onComplete: () => void
 }
 
 export default function LoginSequence({ isSecret, onComplete }: LoginSequenceProps) {
+  const hasRun = useRef(false)
+  
+  useEffect(() => {
+    if (!hasRun.current && typeof window !== 'undefined') {
+      hasRun.current = true
+      setTimeout(runSequence, 100)
+    }
+  }, [])
   
   const runSequence = async () => {
     const loginContent = document.getElementById('loginContent')
@@ -169,11 +179,6 @@ export default function LoginSequence({ isSecret, onComplete }: LoginSequencePro
     }
     
     await new Promise(resolve => setTimeout(resolve, 500))
-  }
-
-  // Auto-run sequence on mount
-  if (typeof window !== 'undefined') {
-    setTimeout(runSequence, 100)
   }
 
   return null

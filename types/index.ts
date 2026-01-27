@@ -7,6 +7,7 @@ export interface Comment {
 }
 
 export interface BlogPost {
+  _id?: string
   title: string
   date: string
   author: string

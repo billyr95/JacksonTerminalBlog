@@ -9,6 +9,7 @@ import BlogScreen from './BlogScreen/BlogScreen'
 import LoginDropdown from './UserAuth/LoginDropdown'
 import UserInfo from './UserAuth/UserInfo'
 import { blogPosts, secretBlogPosts, asciiArt, secretAsciiArt } from '@/data/blogData'
+import { getAllPosts, getSecretPosts, buildCommentPath } from '@/lib/sanity.queries'
 
 export default function TerminalBlog() {
   // Clerk authentication
@@ -21,7 +22,8 @@ export default function TerminalBlog() {
   
   // Blog state
   const [isSecret, setIsSecret] = useState(false)
-  const [posts, setPosts] = useState<BlogPostType[]>(blogPosts)
+  const [posts, setPosts] = useState<BlogPostType[]>([])
+  const [loading, setLoading] = useState(true)
 
   const color = isSecret ? '#00ff00' : '#8bafc2'
   
@@ -33,6 +35,33 @@ export default function TerminalBlog() {
     if (showBlog) {
       applyColorTheme()
     }
+  }, [showBlog, isSecret])
+
+  // Fetch posts from Sanity
+  useEffect(() => {
+    const fetchPosts = async () => {
+      if (!showBlog) return
+      
+      try {
+        if (isSecret) {
+          // Fetch secret posts from Sanity
+          const sanitySecretPosts = await getSecretPosts()
+          setPosts(sanitySecretPosts.length > 0 ? sanitySecretPosts : secretBlogPosts)
+        } else {
+          // Fetch from Sanity
+          const sanityPosts = await getAllPosts()
+          setPosts(sanityPosts.length > 0 ? sanityPosts : blogPosts)
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error)
+        // Fallback to static data if Sanity fails
+        setPosts(isSecret ? secretBlogPosts : blogPosts)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchPosts()
   }, [showBlog, isSecret])
 
   const applyColorTheme = () => {
@@ -65,10 +94,8 @@ export default function TerminalBlog() {
   const handleInitialLogin = (password: string) => {
     if (password === 'terminal123') {
       setIsSecret(false)
-      setPosts(blogPosts)
     } else if (password === 'Winslow') {
       setIsSecret(true)
-      setPosts(secretBlogPosts)
     }
     
     setShowLogin(false)
@@ -80,7 +107,10 @@ export default function TerminalBlog() {
     setShowBlog(true)
   }
 
-  const handleAddComment = (postIndex: number, author: string, text: string) => {
+  const handleAddComment = async (postIndex: number, author: string, text: string) => {
+    const post = posts[postIndex]
+    
+    // Create optimistic comment for immediate UI update
     const newComment = {
       id: `c${Date.now()}`,
       author,
@@ -89,15 +119,50 @@ export default function TerminalBlog() {
       replies: []
     }
     
+    // Update UI immediately
     const updatedPosts = [...posts]
     if (!updatedPosts[postIndex].comments) {
       updatedPosts[postIndex].comments = []
     }
     updatedPosts[postIndex].comments.push(newComment)
     setPosts(updatedPosts)
+    
+    // Save to Sanity via API route if post has _id
+    if (post._id) {
+      try {
+        const response = await fetch('/api/comments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            postId: post._id,
+            author,
+            text,
+            isReply: false
+          })
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to save comment')
+        }
+        
+        console.log('Comment saved to Sanity')
+      } catch (error) {
+        console.error('Error saving comment:', error)
+        alert('Failed to save comment. Please try again.')
+        // Revert on error
+        const revertedPosts = [...posts]
+        revertedPosts[postIndex].comments = revertedPosts[postIndex].comments.filter(
+          c => c.id !== newComment.id
+        )
+        setPosts(revertedPosts)
+      }
+    }
   }
 
-  const handleAddReply = (postIndex: number, commentId: string, author: string, text: string) => {
+  const handleAddReply = async (postIndex: number, commentId: string, author: string, text: string) => {
+    const post = posts[postIndex]
+    
+    // Create optimistic reply for immediate UI update
     const newReply = {
       id: `r${Date.now()}`,
       author,
@@ -130,6 +195,39 @@ export default function TerminalBlog() {
     
     addReplyToComment(comments)
     setPosts(updatedPosts)
+    
+    // Save to Sanity via API route if post has _id
+    if (post._id) {
+      try {
+        // Build the path to the comment's replies array
+        const commentPath = buildCommentPath(post.comments, commentId)
+        
+        if (commentPath) {
+          const response = await fetch('/api/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              postId: post._id,
+              commentPath,
+              author,
+              text,
+              isReply: true
+            })
+          })
+          
+          if (!response.ok) {
+            throw new Error('Failed to save reply')
+          }
+          
+          console.log('Reply saved to Sanity')
+        } else {
+          console.error('Could not find comment path')
+        }
+      } catch (error) {
+        console.error('Error saving reply:', error)
+        alert('Failed to save reply. Please try again.')
+      }
+    }
   }
 
   return (
@@ -168,16 +266,22 @@ export default function TerminalBlog() {
             />
           )}
           
-          <BlogScreen 
-            posts={posts}
-            isSecret={isSecret}
-            isLoggedIn={isSignedIn || false}
-            username={username}
-            asciiArt={asciiArt}
-            secretAsciiArt={secretAsciiArt}
-            onAddComment={handleAddComment}
-            onAddReply={handleAddReply}
-          />
+          {loading ? (
+            <div className="system-message" style={{ color, marginTop: '40px' }}>
+              Loading posts...
+            </div>
+          ) : (
+            <BlogScreen 
+              posts={posts}
+              isSecret={isSecret}
+              isLoggedIn={isSignedIn || false}
+              username={username}
+              asciiArt={asciiArt}
+              secretAsciiArt={secretAsciiArt}
+              onAddComment={handleAddComment}
+              onAddReply={handleAddReply}
+            />
+          )}
         </>
       )}
     </div>
