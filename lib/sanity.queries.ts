@@ -24,7 +24,49 @@ export async function getAllPosts(): Promise<BlogPost[]> {
           _key,
           author,
           text,
-          "date": date
+          "date": date,
+          "replies": replies[]{
+            _key,
+            author,
+            text,
+            "date": date,
+            "replies": replies[]{
+              _key,
+              author,
+              text,
+              "date": date,
+              "replies": replies[]{
+                _key,
+                author,
+                text,
+                "date": date,
+                "replies": replies[]{
+                  _key,
+                  author,
+                  text,
+                  "date": date,
+                  "replies": replies[]{
+                    _key,
+                    author,
+                    text,
+                    "date": date,
+                    "replies": replies[]{
+                      _key,
+                      author,
+                      text,
+                      "date": date,
+                      "replies": replies[]{
+                        _key,
+                        author,
+                        text,
+                        "date": date
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
@@ -81,7 +123,49 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
           _key,
           author,
           text,
-          "date": date
+          "date": date,
+          "replies": replies[]{
+            _key,
+            author,
+            text,
+            "date": date,
+            "replies": replies[]{
+              _key,
+              author,
+              text,
+              "date": date,
+              "replies": replies[]{
+                _key,
+                author,
+                text,
+                "date": date,
+                "replies": replies[]{
+                  _key,
+                  author,
+                  text,
+                  "date": date,
+                  "replies": replies[]{
+                    _key,
+                    author,
+                    text,
+                    "date": date,
+                    "replies": replies[]{
+                      _key,
+                      author,
+                      text,
+                      "date": date,
+                      "replies": replies[]{
+                        _key,
+                        author,
+                        text,
+                        "date": date
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }
