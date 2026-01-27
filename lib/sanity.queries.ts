@@ -82,7 +82,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
       id: comment._key,
       author: comment.author,
       text: comment.text,
-      date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
+      date: comment.date, // Keep as ISO timestamp
       replies: transformComments(comment.replies || []),
       _saved: true  // Mark all fetched comments as saved
     }))
@@ -181,7 +181,7 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
       id: comment._key,
       author: comment.author,
       text: comment.text,
-      date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
+      date: comment.date, // Keep as ISO timestamp
       replies: transformComments(comment.replies || []),
       _saved: true  // Mark all fetched comments as saved
     }))

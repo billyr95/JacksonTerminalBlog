@@ -44,9 +44,8 @@ export default function CommentItem({
   // Calculate relative time
   useEffect(() => {
     const calculateRelativeTime = () => {
-      // Parse the date string (format: "2026.01.27")
-      const [year, month, day] = comment.date.split('.').map(Number)
-      const commentDate = new Date(year, month - 1, day)
+      // Parse the ISO timestamp from Sanity
+      const commentDate = new Date(comment.date)
       const now = new Date()
       const diffMs = now.getTime() - commentDate.getTime()
       const diffSeconds = Math.floor(diffMs / 1000)
@@ -66,8 +65,8 @@ export default function CommentItem({
     }
 
     calculateRelativeTime()
-    // Update every minute
-    const interval = setInterval(calculateRelativeTime, 60000)
+    // Update every 10 seconds for more accurate "just now" timing
+    const interval = setInterval(calculateRelativeTime, 10000)
     return () => clearInterval(interval)
   }, [comment.date])
 
@@ -93,7 +92,12 @@ export default function CommentItem({
       className="comment" 
       style={{ 
         marginLeft,
-        borderLeftWidth: actualDepth > 0 ? '1px' : '2px'
+        borderLeftWidth: actualDepth > 0 ? '1px' : '2px',
+        margin: '10px 0',
+        padding: '10px',
+        borderLeftColor: '#555',
+        borderLeftStyle: 'solid',
+        backgroundColor: '#050505'
       }}
     >
       <div className="comment-author" style={{ color }}>
@@ -103,7 +107,7 @@ export default function CommentItem({
         }}>
           {comment.author}
         </span>
-        <span className="comment-date" style={{ color }}>
+        <span className="comment-date" style={{ color, marginLeft: '10px', fontSize: '10px' }}>
           {relativeTime}
         </span>
         {isTemporary && (
