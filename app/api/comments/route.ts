@@ -1,14 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/sanity.server'
 
-// Force this route to be dynamic (not built at build-time)
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
-  // Add this logging
-  console.log('Token exists:', !!process.env.SANITY_API_TOKEN)
-  console.log('Token length:', process.env.SANITY_API_TOKEN?.length)
-  
   try {
     const { postId, commentPath, author, text, isReply } = await request.json()
 
@@ -23,11 +18,15 @@ export async function POST(request: NextRequest) {
         replies: []
       }
 
+      console.log('Saving reply to path:', commentPath) // Debug log
+
       await serverClient
         .patch(postId)
         .setIfMissing({ [commentPath]: [] })
         .append(commentPath, [newReply])
         .commit()
+        
+      console.log('Reply saved successfully') // Debug log
     } else {
       // Add new top-level comment
       const newComment = {
