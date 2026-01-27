@@ -68,8 +68,8 @@ export default function CommentItem({
       </div>
       <div className="comment-text" style={{ color }}>{comment.text}</div>
       
-      {/* Reply button - only show if depth < 3 and comment is saved */}
-      {depth < 3 && !isTemporary && (
+      {/* Reply button - show if comment is saved (no depth limit) */}
+      {!isTemporary && (
         <button
           onClick={() => setShowReplyForm(!showReplyForm)}
           style={{
@@ -87,7 +87,7 @@ export default function CommentItem({
       )}
       
       {/* Show message if temporary */}
-      {depth < 3 && isTemporary && (
+      {isTemporary && (
         <div style={{ 
           color: '#888', 
           fontSize: '10px', 
