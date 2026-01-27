@@ -29,9 +29,18 @@ export default function CommentItem({
   const visibleReplies = showAllReplies ? comment.replies : comment.replies?.slice(0, 3)
   const hiddenCount = replyCount - 3
 
+  // Check if this is a temporary comment (not yet saved to Sanity)
+  // Temporary IDs start with 'c' or 'r' followed by timestamp (all digits)
+  const isTemporary = comment.id.match(/^[cr]\d+$/) !== null
+
   const handleReplySubmit = () => {
     if (!replyText.trim()) {
       alert('ERROR: Reply text cannot be empty')
+      return
+    }
+    
+    if (isTemporary) {
+      alert('Please wait for the comment to save before replying.')
       return
     }
     
@@ -52,11 +61,16 @@ export default function CommentItem({
       <div className="comment-author" style={{ color }}>
         {comment.author}
         <span className="comment-date" style={{ color }}>{comment.date}</span>
+        {isTemporary && (
+          <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
+            (saving...)
+          </span>
+        )}
       </div>
       <div className="comment-text" style={{ color }}>{comment.text}</div>
       
-      {/* Reply button - only show if depth < 3 to prevent deep nesting */}
-      {depth < 3 && (
+      {/* Reply button - only show if depth < 3 and comment is saved */}
+      {depth < 3 && !isTemporary && (
         <button
           onClick={() => setShowReplyForm(!showReplyForm)}
           style={{
@@ -71,6 +85,18 @@ export default function CommentItem({
         >
           [ REPLY ]
         </button>
+      )}
+      
+      {/* Show message if temporary */}
+      {depth < 3 && isTemporary && (
+        <div style={{ 
+          color: '#888', 
+          fontSize: '10px', 
+          marginTop: '8px',
+          fontStyle: 'italic'
+        }}>
+          Saving comment...
+        </div>
       )}
       
       {/* Reply form */}
