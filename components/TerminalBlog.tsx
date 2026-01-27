@@ -110,9 +110,11 @@ export default function TerminalBlog() {
   const handleAddComment = async (postIndex: number, author: string, text: string) => {
     const post = posts[postIndex]
     
+    const tempId = `c${Date.now()}`
+    
     // Create optimistic comment for immediate UI update
     const newComment = {
-      id: `c${Date.now()}`,
+      id: tempId,
       author,
       date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
       text,
@@ -146,13 +148,25 @@ export default function TerminalBlog() {
         }
         
         console.log('Comment saved to Sanity')
+        
+        // Refetch to get real _key from Sanity
+        const sanityPosts = isSecret ? await getSecretPosts() : await getAllPosts()
+        const updatedPost = sanityPosts.find(p => p._id === post._id)
+        
+        if (updatedPost) {
+          const finalPosts = [...posts]
+          finalPosts[postIndex] = updatedPost
+          setPosts(finalPosts)
+          console.log('✅ Comment updated with real Sanity _key')
+        }
+        
       } catch (error) {
         console.error('Error saving comment:', error)
         alert('Failed to save comment. Please try again.')
         // Revert on error
         const revertedPosts = [...posts]
         revertedPosts[postIndex].comments = revertedPosts[postIndex].comments.filter(
-          c => c.id !== newComment.id
+          c => c.id !== tempId
         )
         setPosts(revertedPosts)
       }
@@ -162,9 +176,11 @@ export default function TerminalBlog() {
   const handleAddReply = async (postIndex: number, commentId: string, author: string, text: string) => {
     const post = posts[postIndex]
     
+    const tempId = `r${Date.now()}`
+    
     // Create optimistic reply for immediate UI update
     const newReply = {
-      id: `r${Date.now()}`,
+      id: tempId,
       author,
       date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
       text,
@@ -246,6 +262,18 @@ export default function TerminalBlog() {
           }
           
           console.log('Reply saved to Sanity')
+          
+          // Refetch to get real _key from Sanity
+          const sanityPosts = isSecret ? await getSecretPosts() : await getAllPosts()
+          const updatedPost = sanityPosts.find(p => p._id === post._id)
+          
+          if (updatedPost) {
+            const finalPosts = [...posts]
+            finalPosts[postIndex] = updatedPost
+            setPosts(finalPosts)
+            console.log('✅ Reply updated with real Sanity _key')
+          }
+          
         } else {
           console.error('Could not find comment path for id:', commentId)
         }
