@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { serverClient } from '@/lib/sanity.server'
 
 export async function POST(request: NextRequest) {
+  // Add this logging
+  console.log('Token exists:', !!process.env.SANITY_API_TOKEN)
+  console.log('Token length:', process.env.SANITY_API_TOKEN?.length)
+  
   try {
     const { postId, commentPath, author, text, isReply } = await request.json()
 
