@@ -200,16 +200,24 @@ export default function TerminalBlog() {
     if (post._id) {
       try {
         // Build the path to the comment's replies array
-        // The comment.id IS the _key from Sanity (mapped in transformation)
-        const buildPath = (comments: any[], targetId: string, basePath: string = 'comments'): string | null => {
-          for (const comment of comments) {
+        // FIXED: Now properly searches through ALL nested levels
+        const buildPath = (comments: any[], targetId: string, currentPath: string = 'comments'): string | null => {
+          for (let i = 0; i < comments.length; i++) {
+            const comment = comments[i]
+            
+            // Check if this is the target comment
             if (comment.id === targetId) {
-              // Found the target comment, return path to its replies array
-              return `${basePath}[_key=="${comment.id}"].replies`
+              // Found it! Return the path to its replies array
+              return `${currentPath}[_key=="${comment.id}"].replies`
             }
+            
+            // Search in nested replies (this is the key fix)
             if (comment.replies && comment.replies.length > 0) {
-              // Recursively search nested replies
-              const nestedPath = buildPath(comment.replies, targetId, `${basePath}[_key=="${comment.id}"].replies`)
+              const nestedPath = buildPath(
+                comment.replies,
+                targetId,
+                `${currentPath}[_key=="${comment.id}"].replies`
+              )
               if (nestedPath) return nestedPath
             }
           }
