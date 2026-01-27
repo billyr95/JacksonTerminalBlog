@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Comment } from '@/types'
 
 interface CommentItemProps {
@@ -23,6 +23,7 @@ export default function CommentItem({
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [replyText, setReplyText] = useState('')
   const [showAllReplies, setShowAllReplies] = useState(false)
+  const [relativeTime, setRelativeTime] = useState('')
   
   const hasReplies = comment.replies && comment.replies.length > 0
   const replyCount = comment.replies?.length || 0
@@ -31,6 +32,44 @@ export default function CommentItem({
 
   // Check if this comment has been saved to Sanity
   const isTemporary = comment._saved === false
+  
+  // Check if this is the current user's comment
+  const isOwnComment = isLoggedIn && comment.author === username
+  
+  // Cap indentation at 4 levels (120px)
+  const maxIndent = 4
+  const actualDepth = Math.min(depth, maxIndent)
+  const marginLeft = actualDepth > 0 ? `${actualDepth * 30}px` : '0'
+
+  // Calculate relative time
+  useEffect(() => {
+    const calculateRelativeTime = () => {
+      // Parse the date string (format: "2026.01.27")
+      const [year, month, day] = comment.date.split('.').map(Number)
+      const commentDate = new Date(year, month - 1, day)
+      const now = new Date()
+      const diffMs = now.getTime() - commentDate.getTime()
+      const diffSeconds = Math.floor(diffMs / 1000)
+      const diffMinutes = Math.floor(diffSeconds / 60)
+      const diffHours = Math.floor(diffMinutes / 60)
+      const diffDays = Math.floor(diffHours / 24)
+
+      if (diffSeconds < 60) {
+        setRelativeTime(`${diffSeconds} second${diffSeconds !== 1 ? 's' : ''} ago`)
+      } else if (diffMinutes < 60) {
+        setRelativeTime(`${diffMinutes} minute${diffMinutes !== 1 ? 's' : ''} ago`)
+      } else if (diffHours < 24) {
+        setRelativeTime(`${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`)
+      } else {
+        setRelativeTime(`${diffDays} day${diffDays !== 1 ? 's' : ''} ago`)
+      }
+    }
+
+    calculateRelativeTime()
+    // Update every minute
+    const interval = setInterval(calculateRelativeTime, 60000)
+    return () => clearInterval(interval)
+  }, [comment.date])
 
   const handleReplySubmit = () => {
     if (!replyText.trim()) {
@@ -53,13 +92,20 @@ export default function CommentItem({
     <div 
       className="comment" 
       style={{ 
-        marginLeft: depth > 0 ? '30px' : '0',
-        borderLeftWidth: depth > 0 ? '1px' : '2px'
+        marginLeft,
+        borderLeftWidth: actualDepth > 0 ? '1px' : '2px'
       }}
     >
       <div className="comment-author" style={{ color }}>
-        {comment.author}
-        <span className="comment-date" style={{ color }}>{comment.date}</span>
+        <span style={{ 
+          fontWeight: isOwnComment ? 'bold' : 'normal',
+          color: isOwnComment ? '#00ff00' : color
+        }}>
+          {comment.author}
+        </span>
+        <span className="comment-date" style={{ color }}>
+          {relativeTime}
+        </span>
         {isTemporary && (
           <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
             (saving...)
