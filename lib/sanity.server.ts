@@ -1,9 +1,5 @@
 import { createClient } from 'next-sanity'
 
-if (!process.env.SANITY_API_TOKEN) {
-  throw new Error('Missing SANITY_API_TOKEN environment variable')
-}
-
 export const serverClient = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID!,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET!,
