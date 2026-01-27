@@ -1,7 +1,9 @@
 export interface Comment {
+  id: string
   author: string
   date: string
   text: string
+  replies?: Comment[]
 }
 
 export interface BlogPost {

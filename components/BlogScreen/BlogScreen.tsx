@@ -19,6 +19,7 @@ interface BlogScreenProps {
   asciiArt: string
   secretAsciiArt: string
   onAddComment: (postIndex: number, author: string, text: string) => void
+  onAddReply: (postIndex: number, commentId: string, author: string, text: string) => void
 }
 
 export default function BlogScreen({ 
@@ -28,7 +29,8 @@ export default function BlogScreen({
   username, 
   asciiArt,
   secretAsciiArt,
-  onAddComment 
+  onAddComment,
+  onAddReply
 }: BlogScreenProps) {
   
   const color = isSecret ? '#00ff00' : '#8bafc2'
@@ -109,6 +111,7 @@ export default function BlogScreen({
           isLoggedIn={isLoggedIn}
           username={username}
           onAddComment={onAddComment}
+          onAddReply={onAddReply}
         />
       </div>
     </div>

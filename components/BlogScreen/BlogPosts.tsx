@@ -9,6 +9,7 @@ interface BlogPostsProps {
   isLoggedIn: boolean
   username: string
   onAddComment: (postIndex: number, author: string, text: string) => void
+  onAddReply: (postIndex: number, commentId: string, author: string, text: string) => void
 }
 
 export default function BlogPosts({ 
@@ -16,7 +17,8 @@ export default function BlogPosts({
   color, 
   isLoggedIn, 
   username, 
-  onAddComment 
+  onAddComment,
+  onAddReply
 }: BlogPostsProps) {
   
   return (
@@ -30,6 +32,7 @@ export default function BlogPosts({
           isLoggedIn={isLoggedIn}
           username={username}
           onAddComment={onAddComment}
+          onAddReply={onAddReply}
         />
       ))}
     </div>

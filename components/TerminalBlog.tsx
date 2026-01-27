@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useUser } from '@clerk/nextjs'
 import { BlogPost as BlogPostType } from '@/types'
 import LoginScreen from './LoginScreen/LoginScreen'
 import LoginSequence from './LoginScreen/LoginSequence'
@@ -10,6 +11,9 @@ import UserInfo from './UserAuth/UserInfo'
 import { blogPosts, secretBlogPosts, asciiArt, secretAsciiArt } from '@/data/blogData'
 
 export default function TerminalBlog() {
+  // Clerk authentication
+  const { isSignedIn, user } = useUser()
+  
   // Screen state
   const [showLogin, setShowLogin] = useState(true)
   const [showBlog, setShowBlog] = useState(false)
@@ -18,12 +22,11 @@ export default function TerminalBlog() {
   // Blog state
   const [isSecret, setIsSecret] = useState(false)
   const [posts, setPosts] = useState<BlogPostType[]>(blogPosts)
-  
-  // User state
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [username, setUsername] = useState('')
 
   const color = isSecret ? '#00ff00' : '#8bafc2'
+  
+  // Get username from Clerk - prioritize username field
+  const username = user?.username || user?.firstName || user?.emailAddresses[0]?.emailAddress?.split('@')[0] || 'user'
 
   // Apply color theme when blog type changes
   useEffect(() => {
@@ -77,23 +80,13 @@ export default function TerminalBlog() {
     setShowBlog(true)
   }
 
-  const handleUserLogin = (username: string, password: string) => {
-    // For now, accept any username/password
-    // This will be replaced with Clerk authentication
-    setIsLoggedIn(true)
-    setUsername(username)
-  }
-
-  const handleUserLogout = () => {
-    setIsLoggedIn(false)
-    setUsername('')
-  }
-
   const handleAddComment = (postIndex: number, author: string, text: string) => {
     const newComment = {
+      id: `c${Date.now()}`,
       author,
       date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
-      text
+      text,
+      replies: []
     }
     
     const updatedPosts = [...posts]
@@ -101,6 +94,41 @@ export default function TerminalBlog() {
       updatedPosts[postIndex].comments = []
     }
     updatedPosts[postIndex].comments.push(newComment)
+    setPosts(updatedPosts)
+  }
+
+  const handleAddReply = (postIndex: number, commentId: string, author: string, text: string) => {
+    const newReply = {
+      id: `r${Date.now()}`,
+      author,
+      date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+      text,
+      replies: []
+    }
+    
+    const updatedPosts = [...posts]
+    const comments = updatedPosts[postIndex].comments
+    
+    // Recursive function to find and add reply to the correct comment
+    const addReplyToComment = (comments: any[]): boolean => {
+      for (let comment of comments) {
+        if (comment.id === commentId) {
+          if (!comment.replies) {
+            comment.replies = []
+          }
+          comment.replies.push(newReply)
+          return true
+        }
+        if (comment.replies && comment.replies.length > 0) {
+          if (addReplyToComment(comment.replies)) {
+            return true
+          }
+        }
+      }
+      return false
+    }
+    
+    addReplyToComment(comments)
     setPosts(updatedPosts)
   }
 
@@ -129,27 +157,26 @@ export default function TerminalBlog() {
       
       {showBlog && (
         <>
-          {isLoggedIn ? (
+          {isSignedIn ? (
             <UserInfo 
               username={username}
               color={color}
-              onLogout={handleUserLogout}
             />
           ) : (
             <LoginDropdown 
               color={color}
-              onLogin={handleUserLogin}
             />
           )}
           
           <BlogScreen 
             posts={posts}
             isSecret={isSecret}
-            isLoggedIn={isLoggedIn}
+            isLoggedIn={isSignedIn || false}
             username={username}
             asciiArt={asciiArt}
             secretAsciiArt={secretAsciiArt}
             onAddComment={handleAddComment}
+            onAddReply={handleAddReply}
           />
         </>
       )}

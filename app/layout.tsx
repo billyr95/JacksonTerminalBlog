@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import Script from 'next/script'
+import { ClerkProvider } from '@clerk/nextjs'
 
 export const metadata: Metadata = {
   title: 'TERMINAL BLOG v1.0',
@@ -13,19 +14,21 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <head>
-        {/* GSAP Library */}
-        <Script 
-          src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
-          strategy="beforeInteractive"
-        />
-        <Script 
-          src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"
-          strategy="beforeInteractive"
-        />
-      </head>
-      <body>{children}</body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <head>
+          {/* GSAP Library */}
+          <Script 
+            src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"
+            strategy="beforeInteractive"
+          />
+          <Script 
+            src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/TextPlugin.min.js"
+            strategy="beforeInteractive"
+          />
+        </head>
+        <body>{children}</body>
+      </html>
+    </ClerkProvider>
   )
 }

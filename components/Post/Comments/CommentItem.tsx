@@ -1,20 +1,208 @@
 'use client'
 
+import { useState } from 'react'
 import { Comment } from '@/types'
 
 interface CommentItemProps {
   comment: Comment
   color: string
+  depth?: number
+  isLoggedIn: boolean
+  username: string
+  onReply: (commentId: string, author: string, text: string) => void
 }
 
-export default function CommentItem({ comment, color }: CommentItemProps) {
+export default function CommentItem({ 
+  comment, 
+  color, 
+  depth = 0,
+  isLoggedIn,
+  username,
+  onReply
+}: CommentItemProps) {
+  const [showReplyForm, setShowReplyForm] = useState(false)
+  const [replyText, setReplyText] = useState('')
+  const [showAllReplies, setShowAllReplies] = useState(false)
+  
+  const hasReplies = comment.replies && comment.replies.length > 0
+  const replyCount = comment.replies?.length || 0
+  const visibleReplies = showAllReplies ? comment.replies : comment.replies?.slice(0, 3)
+  const hiddenCount = replyCount - 3
+
+  const handleReplySubmit = () => {
+    if (!replyText.trim()) {
+      alert('ERROR: Reply text cannot be empty')
+      return
+    }
+    
+    const author = isLoggedIn ? username : 'anonymous'
+    onReply(comment.id, author, replyText)
+    setReplyText('')
+    setShowReplyForm(false)
+  }
+
   return (
-    <div className="comment">
+    <div 
+      className="comment" 
+      style={{ 
+        marginLeft: depth > 0 ? '30px' : '0',
+        borderLeftWidth: depth > 0 ? '1px' : '2px'
+      }}
+    >
       <div className="comment-author" style={{ color }}>
         {comment.author}
         <span className="comment-date" style={{ color }}>{comment.date}</span>
       </div>
       <div className="comment-text" style={{ color }}>{comment.text}</div>
+      
+      {/* Reply button - only show if depth < 3 to prevent deep nesting */}
+      {depth < 3 && (
+        <button
+          onClick={() => setShowReplyForm(!showReplyForm)}
+          style={{
+            background: 'none',
+            border: 'none',
+            color,
+            cursor: 'pointer',
+            fontSize: '11px',
+            marginTop: '8px',
+            padding: '0'
+          }}
+        >
+          [ REPLY ]
+        </button>
+      )}
+      
+      {/* Reply form */}
+      {showReplyForm && (
+        <div style={{ marginTop: '10px' }}>
+          {isLoggedIn && (
+            <div className="system-message" style={{ color, fontSize: '10px', margin: '5px 0' }}>
+              Replying as: {username}
+            </div>
+          )}
+          <textarea
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            placeholder="Write your reply..."
+            style={{
+              width: '100%',
+              minHeight: '50px',
+              backgroundColor: '#0a0a0a',
+              border: `1px solid ${color}`,
+              color,
+              fontFamily: "'CustomFont', 'Courier New', monospace",
+              fontSize: '12px',
+              padding: '8px',
+              resize: 'vertical'
+            }}
+          />
+          <div style={{ marginTop: '5px', display: 'flex', gap: '10px' }}>
+            <button
+              onClick={handleReplySubmit}
+              style={{
+                backgroundColor: 'transparent',
+                border: `1px solid ${color}`,
+                color,
+                padding: '4px 12px',
+                fontSize: '11px',
+                cursor: 'pointer',
+                fontFamily: "'CustomFont', 'Courier New', monospace"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = color
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = color
+              }}
+            >
+              [ POST REPLY ]
+            </button>
+            <button
+              onClick={() => {
+                setShowReplyForm(false)
+                setReplyText('')
+              }}
+              style={{
+                backgroundColor: 'transparent',
+                border: `1px solid ${color}`,
+                color,
+                padding: '4px 12px',
+                fontSize: '11px',
+                cursor: 'pointer',
+                fontFamily: "'CustomFont', 'Courier New', monospace"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = color
+                e.currentTarget.style.color = '#000'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = color
+              }}
+            >
+              [ CANCEL ]
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Replies */}
+      {hasReplies && (
+        <div style={{ marginTop: '10px' }}>
+          {visibleReplies?.map((reply) => (
+            <CommentItem
+              key={reply.id}
+              comment={reply}
+              color={color}
+              depth={depth + 1}
+              isLoggedIn={isLoggedIn}
+              username={username}
+              onReply={onReply}
+            />
+          ))}
+          
+          {/* Show More button */}
+          {!showAllReplies && hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAllReplies(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color,
+                cursor: 'pointer',
+                fontSize: '11px',
+                marginTop: '8px',
+                marginLeft: '30px',
+                padding: '0'
+              }}
+            >
+              [ SHOW {hiddenCount} MORE {hiddenCount === 1 ? 'REPLY' : 'REPLIES'} ]
+            </button>
+          )}
+          
+          {/* Show Less button */}
+          {showAllReplies && hiddenCount > 0 && (
+            <button
+              onClick={() => setShowAllReplies(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color,
+                cursor: 'pointer',
+                fontSize: '11px',
+                marginTop: '8px',
+                marginLeft: '30px',
+                padding: '0'
+              }}
+            >
+              [ SHOW LESS ]
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

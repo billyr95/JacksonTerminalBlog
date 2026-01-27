@@ -13,6 +13,7 @@ interface BlogPostProps {
   isLoggedIn: boolean
   username: string
   onAddComment: (postIndex: number, author: string, text: string) => void
+  onAddReply: (postIndex: number, commentId: string, author: string, text: string) => void
 }
 
 export default function BlogPost({ 
@@ -21,11 +22,16 @@ export default function BlogPost({
   color, 
   isLoggedIn, 
   username, 
-  onAddComment 
+  onAddComment,
+  onAddReply
 }: BlogPostProps) {
   
   const handleAddComment = (author: string, text: string) => {
     onAddComment(postIndex, author, text)
+  }
+  
+  const handleReply = (commentId: string, author: string, text: string) => {
+    onAddReply(postIndex, commentId, author, text)
   }
 
   return (
@@ -60,6 +66,9 @@ export default function BlogPost({
       <CommentList 
         comments={post.comments}
         color={color}
+        isLoggedIn={isLoggedIn}
+        username={username}
+        onReply={handleReply}
       />
       
       <AddComment 
