@@ -29,9 +29,8 @@ export default function CommentItem({
   const visibleReplies = showAllReplies ? comment.replies : comment.replies?.slice(0, 3)
   const hiddenCount = replyCount - 3
 
-  // Check if this is a temporary comment (not yet saved to Sanity)
-  // Temporary IDs start with 'c' or 'r' followed by timestamp (all digits)
-  const isTemporary = comment.id.match(/^[cr]\d+$/) !== null
+  // Check if this comment has been saved to Sanity
+  const isTemporary = comment._saved === false
 
   const handleReplySubmit = () => {
     if (!replyText.trim()) {

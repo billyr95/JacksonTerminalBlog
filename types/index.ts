@@ -4,6 +4,7 @@ export interface Comment {
   date: string
   text: string
   replies?: Comment[]
+  _saved?: boolean
 }
 
 export interface BlogPost {

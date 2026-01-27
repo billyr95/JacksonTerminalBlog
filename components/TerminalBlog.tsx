@@ -118,7 +118,8 @@ export default function TerminalBlog() {
       author,
       date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
       text,
-      replies: []
+      replies: [],
+      _saved: false  // Mark as not saved yet
     }
     
     // Update UI immediately
@@ -184,7 +185,8 @@ export default function TerminalBlog() {
       author,
       date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
       text,
-      replies: []
+      replies: [],
+      _saved: false  // Mark as not saved yet
     }
     
     const updatedPosts = [...posts]

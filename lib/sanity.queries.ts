@@ -30,7 +30,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     }
   }`
   
-const posts = await client.fetch(query)
+  const posts = await client.fetch(query)
   
   // Recursive function to transform comments at any nesting level
   const transformComments = (comments: any[]): any[] => {
@@ -41,7 +41,8 @@ const posts = await client.fetch(query)
       author: comment.author,
       text: comment.text,
       date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
-      replies: transformComments(comment.replies || [])
+      replies: transformComments(comment.replies || []),
+      _saved: true  // Mark all fetched comments as saved
     }))
   }
   
@@ -86,7 +87,7 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     }
   }`
   
-const posts = await client.fetch(query)
+  const posts = await client.fetch(query)
   
   // Recursive function to transform comments at any nesting level
   const transformComments = (comments: any[]): any[] => {
@@ -97,7 +98,8 @@ const posts = await client.fetch(query)
       author: comment.author,
       text: comment.text,
       date: new Date(comment.date).toISOString().split('T')[0].replace(/-/g, '.'),
-      replies: transformComments(comment.replies || [])
+      replies: transformComments(comment.replies || []),
+      _saved: true  // Mark all fetched comments as saved
     }))
   }
   
