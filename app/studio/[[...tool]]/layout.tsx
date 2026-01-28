@@ -6,20 +6,18 @@ export default function StudioLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <head>
-        <style>{`
-          body::before {
-            display: none !important;
-          }
-          body {
-            margin: 0;
-            padding: 0;
-            background: #fff;
-          }
-        `}</style>
-      </head>
-      <body>{children}</body>
-    </html>
+    <body className="studio-body" suppressHydrationWarning>
+      <style>{`
+        .studio-body::before {
+          display: none !important;
+        }
+        .studio-body {
+          margin: 0;
+          padding: 0;
+          background: #fff;
+        }
+      `}</style>
+      {children}
+    </body>
   )
 }
