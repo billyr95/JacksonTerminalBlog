@@ -9,7 +9,7 @@ import BlogScreen from './BlogScreen/BlogScreen'
 import LoginDropdown from './UserAuth/LoginDropdown'
 import UserInfo from './UserAuth/UserInfo'
 import { blogPosts, secretBlogPosts, asciiArt, secretAsciiArt } from '@/data/blogData'
-import { getAllPosts, getSecretPosts, buildCommentPath } from '@/lib/sanity.queries'
+import { getAllPosts, getSecretPosts } from '@/lib/sanity.queries'
 
 export default function TerminalBlog() {
   // Clerk authentication
@@ -110,13 +110,16 @@ export default function TerminalBlog() {
   const handleAddComment = async (postIndex: number, author: string, text: string) => {
     const post = posts[postIndex]
     
-    // Create optimistic comment for immediate UI update
+    const tempId = `c${Date.now()}`
+    
+    // Create optimistic comment for immediate UI update with ISO timestamp
     const newComment = {
-      id: `c${Date.now()}`,
+      id: tempId,
       author,
-      date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+      date: new Date().toISOString(), // Full ISO timestamp for accurate relative time
       text,
-      replies: []
+      replies: [],
+      _saved: false  // Mark as not saved yet
     }
     
     // Update UI immediately
@@ -146,13 +149,25 @@ export default function TerminalBlog() {
         }
         
         console.log('Comment saved to Sanity')
+        
+        // Refetch to get real _key from Sanity
+        const sanityPosts = isSecret ? await getSecretPosts() : await getAllPosts()
+        const updatedPost = sanityPosts.find(p => p._id === post._id)
+        
+        if (updatedPost) {
+          const finalPosts = [...posts]
+          finalPosts[postIndex] = updatedPost
+          setPosts(finalPosts)
+          console.log('✅ Comment updated with real Sanity _key')
+        }
+        
       } catch (error) {
         console.error('Error saving comment:', error)
         alert('Failed to save comment. Please try again.')
         // Revert on error
         const revertedPosts = [...posts]
         revertedPosts[postIndex].comments = revertedPosts[postIndex].comments.filter(
-          c => c.id !== newComment.id
+          c => c.id !== tempId
         )
         setPosts(revertedPosts)
       }
@@ -162,13 +177,16 @@ export default function TerminalBlog() {
   const handleAddReply = async (postIndex: number, commentId: string, author: string, text: string) => {
     const post = posts[postIndex]
     
-    // Create optimistic reply for immediate UI update
+    const tempId = `r${Date.now()}`
+    
+    // Create optimistic reply for immediate UI update with ISO timestamp
     const newReply = {
-      id: `r${Date.now()}`,
+      id: tempId,
       author,
-      date: new Date().toISOString().split('T')[0].replace(/-/g, '.'),
+      date: new Date().toISOString(), // Full ISO timestamp for accurate relative time
       text,
-      replies: []
+      replies: [],
+      _saved: false  // Mark as not saved yet
     }
     
     const updatedPosts = [...posts]
@@ -200,9 +218,35 @@ export default function TerminalBlog() {
     if (post._id) {
       try {
         // Build the path to the comment's replies array
-        const commentPath = buildCommentPath(post.comments, commentId)
+        // This searches through ALL nested levels and handles both temp IDs and Sanity _keys
+        const buildPath = (comments: any[], targetId: string, currentPath: string = 'comments'): string | null => {
+          for (let i = 0; i < comments.length; i++) {
+            const comment = comments[i]
+            
+            // Check if this is the target comment (match by id)
+            if (comment.id === targetId) {
+              // Use the comment's id for the Sanity path (this is the _key after refetch)
+              return `${currentPath}[_key=="${comment.id}"].replies`
+            }
+            
+            // Search in nested replies
+            if (comment.replies && comment.replies.length > 0) {
+              const nestedPath = buildPath(
+                comment.replies,
+                targetId,
+                `${currentPath}[_key=="${comment.id}"].replies`
+              )
+              if (nestedPath) return nestedPath
+            }
+          }
+          return null
+        }
+        
+        const commentPath = buildPath(post.comments, commentId)
         
         if (commentPath) {
+          console.log('Built comment path:', commentPath)
+          
           const response = await fetch('/api/comments', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -220,8 +264,21 @@ export default function TerminalBlog() {
           }
           
           console.log('Reply saved to Sanity')
+          
+          // Refetch to get real _key from Sanity
+          const sanityPosts = isSecret ? await getSecretPosts() : await getAllPosts()
+          const updatedPost = sanityPosts.find(p => p._id === post._id)
+          
+          if (updatedPost) {
+            const finalPosts = [...posts]
+            finalPosts[postIndex] = updatedPost
+            setPosts(finalPosts)
+            console.log('✅ Reply updated with real Sanity _key')
+          }
+          
         } else {
-          console.error('Could not find comment path')
+          console.error('Could not find comment path for id:', commentId)
+          alert('Could not find parent comment. Please refresh and try again.')
         }
       } catch (error) {
         console.error('Error saving reply:', error)

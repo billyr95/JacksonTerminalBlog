@@ -24,6 +24,7 @@ export default function CommentItem({
   const [replyText, setReplyText] = useState('')
   const [showAllReplies, setShowAllReplies] = useState(false)
   const [relativeTime, setRelativeTime] = useState('')
+  const [isCollapsed, setIsCollapsed] = useState(depth >= 2) // Auto-collapse at depth 2+
   
   const hasReplies = comment.replies && comment.replies.length > 0
   const replyCount = comment.replies?.length || 0
@@ -36,16 +37,26 @@ export default function CommentItem({
   // Check if this is the current user's comment
   const isOwnComment = isLoggedIn && comment.author === username
   
-  // Cap indentation at 4 levels (120px)
+  // Cap indentation at 4 levels (120px max)
   const maxIndent = 4
   const actualDepth = Math.min(depth, maxIndent)
-  const marginLeft = actualDepth > 0 ? `${actualDepth * 30}px` : '0'
+  const indentPx = actualDepth * 30
 
   // Calculate relative time
   useEffect(() => {
     const calculateRelativeTime = () => {
-      // Parse the ISO timestamp from Sanity
-      const commentDate = new Date(comment.date)
+      // Handle both ISO timestamps and date-only formats
+      let commentDate: Date
+      
+      // Check if it's an ISO timestamp (has 'T' in it)
+      if (comment.date.includes('T')) {
+        commentDate = new Date(comment.date)
+      } else {
+        // It's in format "2026.01.27" - convert to ISO
+        const [year, month, day] = comment.date.split('.').map(Number)
+        commentDate = new Date(year, month - 1, day)
+      }
+      
       const now = new Date()
       const diffMs = now.getTime() - commentDate.getTime()
       const diffSeconds = Math.floor(diffMs / 1000)
@@ -87,195 +98,270 @@ export default function CommentItem({
     setShowReplyForm(false)
   }
 
+  // Count total nested replies recursively
+  const countTotalReplies = (comment: Comment): number => {
+    if (!comment.replies || comment.replies.length === 0) return 0
+    return comment.replies.length + comment.replies.reduce((sum, reply) => sum + countTotalReplies(reply), 0)
+  }
+
+  const totalNestedReplies = countTotalReplies(comment)
+
   return (
     <div 
-      className="comment" 
       style={{ 
-        marginLeft,
-        borderLeftWidth: actualDepth > 0 ? '1px' : '2px',
+        marginLeft: `${indentPx}px`,
         margin: '10px 0',
         padding: '10px',
-        borderLeftColor: '#555',
-        borderLeftStyle: 'solid',
+        borderLeft: `${actualDepth > 0 ? '1px' : '2px'} solid #555`,
         backgroundColor: '#050505'
       }}
     >
-      <div className="comment-author" style={{ color }}>
-        <span style={{ 
-          fontWeight: isOwnComment ? 'bold' : 'normal',
-          color: isOwnComment ? '#00ff00' : color
-        }}>
-          {comment.author}
-        </span>
-        <span className="comment-date" style={{ color, marginLeft: '10px', fontSize: '10px' }}>
-          {relativeTime}
-        </span>
-        {isTemporary && (
-          <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
-            (saving...)
-          </span>
+      <div style={{ 
+        color, 
+        fontSize: '12px', 
+        marginBottom: '5px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px'
+      }}>
+        {/* Collapse/Expand button */}
+        {hasReplies && (
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color,
+              cursor: 'pointer',
+              fontSize: '12px',
+              padding: '0',
+              fontWeight: 'bold',
+              width: '16px',
+              textAlign: 'center'
+            }}
+            title={isCollapsed ? 'Expand replies' : 'Collapse replies'}
+          >
+            {isCollapsed ? '[+]' : '[-]'}
+          </button>
         )}
-      </div>
-      <div className="comment-text" style={{ color }}>{comment.text}</div>
-      
-      {/* Reply button - show if comment is saved (no depth limit) */}
-      {!isTemporary && (
-        <button
-          onClick={() => setShowReplyForm(!showReplyForm)}
-          style={{
-            background: 'none',
-            border: 'none',
-            color,
-            cursor: 'pointer',
-            fontSize: '11px',
-            marginTop: '8px',
-            padding: '0'
-          }}
-        >
-          [ REPLY ]
-        </button>
-      )}
-      
-      {/* Show message if temporary */}
-      {isTemporary && (
-        <div style={{ 
-          color: '#888', 
-          fontSize: '10px', 
-          marginTop: '8px',
-          fontStyle: 'italic'
-        }}>
-          Saving comment...
+        
+        <div style={{ flex: 1 }}>
+          <span style={{ 
+            fontWeight: isOwnComment ? 'bold' : 'normal',
+            color: isOwnComment ? '#00ff00' : color
+          }}>
+            {comment.author}
+          </span>
+          <span style={{ 
+            color, 
+            marginLeft: '10px', 
+            fontSize: '10px' 
+          }}>
+            {relativeTime}
+          </span>
+          {isTemporary && (
+            <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
+              (saving...)
+            </span>
+          )}
+          {isCollapsed && hasReplies && (
+            <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
+              ({totalNestedReplies} {totalNestedReplies === 1 ? 'reply' : 'replies'} hidden)
+            </span>
+          )}
         </div>
-      )}
+      </div>
       
-      {/* Reply form */}
-      {showReplyForm && (
-        <div style={{ marginTop: '10px' }}>
-          {isLoggedIn && (
-            <div className="system-message" style={{ color, fontSize: '10px', margin: '5px 0' }}>
-              Replying as: {username}
+      {/* Always show comment text */}
+      <div style={{ 
+        color, 
+        fontSize: '14px',
+        wordWrap: 'break-word',
+        overflowWrap: 'break-word',
+        whiteSpace: 'pre-wrap'
+      }}>
+        {comment.text}
+      </div>
+      
+      {/* Only show reply button and form if not collapsed */}
+      {!isCollapsed && (
+        <>
+          {/* Reply button - show if comment is saved */}
+          {!isTemporary && (
+            <button
+              onClick={() => setShowReplyForm(!showReplyForm)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color,
+                cursor: 'pointer',
+                fontSize: '11px',
+                marginTop: '8px',
+                padding: '0'
+              }}
+            >
+              [ REPLY ]
+            </button>
+          )}
+          
+          {/* Show message if temporary */}
+          {isTemporary && (
+            <div style={{ 
+              color: '#888', 
+              fontSize: '10px', 
+              marginTop: '8px',
+              fontStyle: 'italic'
+            }}>
+              Saving comment...
             </div>
           )}
-          <textarea
-            value={replyText}
-            onChange={(e) => setReplyText(e.target.value)}
-            placeholder="Write your reply..."
-            style={{
-              width: '100%',
-              minHeight: '50px',
-              backgroundColor: '#0a0a0a',
-              border: `1px solid ${color}`,
-              color,
-              fontFamily: "'CustomFont', 'Courier New', monospace",
-              fontSize: '12px',
-              padding: '8px',
-              resize: 'vertical'
-            }}
-          />
-          <div style={{ marginTop: '5px', display: 'flex', gap: '10px' }}>
-            <button
-              onClick={handleReplySubmit}
-              style={{
-                backgroundColor: 'transparent',
-                border: `1px solid ${color}`,
-                color,
-                padding: '4px 12px',
-                fontSize: '11px',
-                cursor: 'pointer',
-                fontFamily: "'CustomFont', 'Courier New', monospace"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = color
-                e.currentTarget.style.color = '#000'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = color
-              }}
-            >
-              [ POST REPLY ]
-            </button>
-            <button
-              onClick={() => {
-                setShowReplyForm(false)
-                setReplyText('')
-              }}
-              style={{
-                backgroundColor: 'transparent',
-                border: `1px solid ${color}`,
-                color,
-                padding: '4px 12px',
-                fontSize: '11px',
-                cursor: 'pointer',
-                fontFamily: "'CustomFont', 'Courier New', monospace"
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = color
-                e.currentTarget.style.color = '#000'
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = color
-              }}
-            >
-              [ CANCEL ]
-            </button>
-          </div>
-        </div>
+          
+          {/* Reply form */}
+          {showReplyForm && (
+            <div style={{ marginTop: '10px' }}>
+              {isLoggedIn && (
+                <div style={{ color, fontSize: '10px', margin: '5px 0' }}>
+                  Replying as: {username}
+                </div>
+              )}
+              <textarea
+                value={replyText}
+                onChange={(e) => setReplyText(e.target.value)}
+                placeholder="Write your reply..."
+                style={{
+                  width: '100%',
+                  minHeight: '50px',
+                  backgroundColor: '#0a0a0a',
+                  border: `1px solid ${color}`,
+                  color,
+                  fontFamily: "'CustomFont', 'Courier New', monospace",
+                  fontSize: '12px',
+                  padding: '8px',
+                  resize: 'vertical'
+                }}
+              />
+              <div style={{ marginTop: '5px', display: 'flex', gap: '10px' }}>
+                <button
+                  onClick={handleReplySubmit}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: `1px solid ${color}`,
+                    color,
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    fontFamily: "'CustomFont', 'Courier New', monospace"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = color
+                    e.currentTarget.style.color = '#000'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = color
+                  }}
+                >
+                  [ POST REPLY ]
+                </button>
+                <button
+                  onClick={() => {
+                    setShowReplyForm(false)
+                    setReplyText('')
+                  }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: `1px solid ${color}`,
+                    color,
+                    padding: '4px 12px',
+                    fontSize: '11px',
+                    cursor: 'pointer',
+                    fontFamily: "'CustomFont', 'Courier New', monospace"
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = color
+                    e.currentTarget.style.color = '#000'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent'
+                    e.currentTarget.style.color = color
+                  }}
+                >
+                  [ CANCEL ]
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Replies */}
+          {hasReplies && (
+            <div style={{ marginTop: '10px' }}>
+              {visibleReplies?.map((reply) => (
+                <CommentItem
+                  key={reply.id}
+                  comment={reply}
+                  color={color}
+                  depth={depth + 1}
+                  isLoggedIn={isLoggedIn}
+                  username={username}
+                  onReply={onReply}
+                />
+              ))}
+              
+              {/* Show More button */}
+              {!showAllReplies && hiddenCount > 0 && (
+                <button
+                  onClick={() => setShowAllReplies(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color,
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    marginTop: '8px',
+                    marginLeft: '0px',
+                    padding: '0'
+                  }}
+                >
+                  [ SHOW {hiddenCount} MORE {hiddenCount === 1 ? 'REPLY' : 'REPLIES'} ]
+                </button>
+              )}
+              
+              {/* Show Less button */}
+              {showAllReplies && hiddenCount > 0 && (
+                <button
+                  onClick={() => setShowAllReplies(false)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color,
+                    cursor: 'pointer',
+                    fontSize: '11px',
+                    marginTop: '8px',
+                    marginLeft: '0px',
+                    padding: '0'
+                  }}
+                >
+                  [ SHOW LESS ]
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
       
-      {/* Replies */}
-      {hasReplies && (
-        <div style={{ marginTop: '10px' }}>
-          {visibleReplies?.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              color={color}
-              depth={depth + 1}
-              isLoggedIn={isLoggedIn}
-              username={username}
-              onReply={onReply}
-            />
-          ))}
-          
-          {/* Show More button */}
-          {!showAllReplies && hiddenCount > 0 && (
-            <button
-              onClick={() => setShowAllReplies(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color,
-                cursor: 'pointer',
-                fontSize: '11px',
-                marginTop: '8px',
-                marginLeft: '30px',
-                padding: '0'
-              }}
-            >
-              [ SHOW {hiddenCount} MORE {hiddenCount === 1 ? 'REPLY' : 'REPLIES'} ]
-            </button>
-          )}
-          
-          {/* Show Less button */}
-          {showAllReplies && hiddenCount > 0 && (
-            <button
-              onClick={() => setShowAllReplies(false)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color,
-                cursor: 'pointer',
-                fontSize: '11px',
-                marginTop: '8px',
-                marginLeft: '30px',
-                padding: '0'
-              }}
-            >
-              [ SHOW LESS ]
-            </button>
-          )}
+      {/* Show collapsed thread preview */}
+      {isCollapsed && hasReplies && (
+        <div 
+          style={{ 
+            color: '#888', 
+            fontSize: '11px', 
+            marginTop: '5px',
+            fontStyle: 'italic',
+            cursor: 'pointer'
+          }}
+          onClick={() => setIsCollapsed(false)}
+        >
+          Click to expand {totalNestedReplies} {totalNestedReplies === 1 ? 'reply' : 'replies'}...
         </div>
       )}
     </div>
