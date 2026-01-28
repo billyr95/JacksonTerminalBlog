@@ -14,6 +14,9 @@ export interface BlogPost {
   author: string
   content: string
   heroImage: string
+  heroImageLink?: string | null
+  heroVideo?: string | null
+  videoUrl?: string | null
   comments: Comment[]
 }
 

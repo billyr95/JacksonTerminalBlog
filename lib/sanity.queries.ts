@@ -10,6 +10,9 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     "date": date,
     content,
     "heroImage": heroImage.asset->url,
+    "heroImageLink": heroImage.link,
+    "heroVideo": heroVideo.asset->url,
+    "videoUrl": videoUrl,
     "comments": comments[]{
       _key,
       author,
@@ -96,6 +99,9 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     author: post.author,
     content: post.content,
     heroImage: post.heroImage || '/images/unnamed.jpg',
+    heroImageLink: post.heroImageLink || null,
+    heroVideo: post.heroVideo || null,
+    videoUrl: post.videoUrl || null,
     comments: transformComments(post.comments || [])
   }))
 }
@@ -109,6 +115,9 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     "date": date,
     content,
     "heroImage": heroImage.asset->url,
+    "heroImageLink": heroImage.link,
+    "heroVideo": heroVideo.asset->url,
+    "videoUrl": videoUrl,
     "comments": comments[]{
       _key,
       author,
@@ -195,6 +204,9 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     author: post.author,
     content: post.content,
     heroImage: post.heroImage || '/images/unnamed.jpg',
+    heroImageLink: post.heroImageLink || null,
+    heroVideo: post.heroVideo || null,
+    videoUrl: post.videoUrl || null,
     comments: transformComments(post.comments || [])
   }))
 }
