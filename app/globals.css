@@ -136,7 +136,7 @@ body:not(.studio-body)::before {
 
 .ascii-art {
   white-space: pre;
-  font-size: 6px;
+  font-size: 3.5px;
   line-height: 1;
   color: #8bafc2;
   margin-bottom: 20px;
@@ -146,25 +146,25 @@ body:not(.studio-body)::before {
 /* Responsive ASCII art sizing */
 @media (max-width: 1400px) {
   .ascii-art {
-    font-size: 5px;
+    font-size: 3.5px;
   }
 }
 
 @media (max-width: 1200px) {
   .ascii-art {
-    font-size: 4px;
+    font-size: 3.5px;
   }
 }
 
 @media (max-width: 900px) {
   .ascii-art {
-    font-size: 3px;
+    font-size: 3.5px;
   }
 }
 
 @media (max-width: 600px) {
   .ascii-art {
-    font-size: 3px;
+    font-size: 3.5px;
   }
   .post-content {
     font-size: 9px;

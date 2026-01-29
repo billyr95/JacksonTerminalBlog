@@ -20,7 +20,7 @@ export default function AsciiArt({
       <div 
         className="ascii-art"
         style={{ 
-          fontSize: '13px',
+          fontSize: '3.5px',
           lineHeight: '1',
           color,
           whiteSpace: 'pre',
@@ -41,7 +41,7 @@ export default function AsciiArt({
       className="ascii-art"
       id="ascii-art-container"
       style={{ 
-        fontSize: '7px',
+        fontSize: '3.5px',
         lineHeight: '1',
         color,
         display: 'flex',
