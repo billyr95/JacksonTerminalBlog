@@ -55,14 +55,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No email found' }, { status: 400 })
     }
 
-    console.log('📧 Syncing user to Laylo:', {
+    console.log('📧 User data from Clerk:', {
       email,
       firstName: first_name,
       lastName: last_name,
       username: username,
     })
 
-    // Prepare GraphQL mutation for Laylo
+    // Prepare GraphQL mutation for Laylo - email only since firstName/lastName aren't supported
     const graphqlQuery = `
       mutation($email: String) {
         subscribeToUser(email: $email)
@@ -72,6 +72,8 @@ export async function POST(req: Request) {
     const variables = {
       email: email
     }
+
+    console.log('🔄 Syncing to Laylo with:', variables)
 
     // Send to Laylo using GraphQL
     try {
@@ -102,12 +104,14 @@ export async function POST(req: Request) {
       }
 
       console.log('✅ Successfully synced to Laylo:', layloData)
+      console.log('ℹ️ Note: firstName and lastName collected in Clerk but not sent to Laylo (API limitation)')
 
       return NextResponse.json({ 
         success: true, 
         message: 'User synced to Laylo',
         subscribed: layloData.data?.subscribeToUser,
-        email: email
+        email: email,
+        note: 'firstName and lastName collected but not synced (Laylo API limitation)'
       })
 
     } catch (error) {
@@ -121,4 +125,3 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ message: 'Webhook received' })
 }
-
