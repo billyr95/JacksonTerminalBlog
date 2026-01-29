@@ -23,10 +23,14 @@ export default function AsciiArt({
           fontSize: '13px',
           lineHeight: '1',
           color,
-          whiteSpace: 'pre'
+          whiteSpace: 'pre',
+          display: 'flex',
+          justifyContent: 'center'
         }}
       >
-        {art}
+        <div style={{ textAlign: 'left' }}>
+          {art}
+        </div>
       </div>
     )
   }
@@ -39,7 +43,9 @@ export default function AsciiArt({
       style={{ 
         fontSize: '7px',
         lineHeight: '1',
-        color
+        color,
+        display: 'flex',
+        justifyContent: 'center'
       }}
     />
   )

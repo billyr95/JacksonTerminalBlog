@@ -54,12 +54,17 @@ export default function BlogScreen({
   }, [isSecret, asciiArt])
 
   const typeWriter = async (element: HTMLElement, lines: string[]) => {
+    // Create inner wrapper for centering
+    const innerWrapper = document.createElement('div')
+    innerWrapper.style.textAlign = 'left'
+    element.appendChild(innerWrapper)
+    
     for (let line of lines) {
       const lineDiv = document.createElement('div')
       lineDiv.className = 'terminal-line animate-text'
       lineDiv.style.color = color
       lineDiv.textContent = ''
-      element.appendChild(lineDiv)
+      innerWrapper.appendChild(lineDiv)
       
       const cursor = document.createElement('span')
       cursor.className = 'typing-cursor-live'

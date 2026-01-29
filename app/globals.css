@@ -140,7 +140,6 @@ body:not(.studio-body)::before {
   line-height: 1;
   color: #8bafc2;
   margin-bottom: 20px;
-  text-align: left;
   overflow: hidden;
 }
 
