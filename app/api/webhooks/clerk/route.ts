@@ -44,7 +44,14 @@ export async function POST(req: Request) {
   const eventType = evt.type
 
   if (eventType === 'user.created' || eventType === 'user.updated') {
+    // DEBUG: Log the entire user data object
+    console.log('🔍 FULL USER DATA:', JSON.stringify(evt.data, null, 2))
+    
     const { id, email_addresses, phone_numbers, first_name, last_name, username } = evt.data
+
+    // DEBUG: Log phone_numbers specifically
+    console.log('📱 Phone numbers array:', phone_numbers)
+    console.log('📱 Primary phone ID:', evt.data.primary_phone_number_id)
 
     // Extract primary email
     const primaryEmail = email_addresses?.find(email => email.id === evt.data.primary_email_address_id)
@@ -53,6 +60,9 @@ export async function POST(req: Request) {
     // Extract primary phone number
     const primaryPhone = phone_numbers?.find(phone => phone.id === evt.data.primary_phone_number_id)
     const phoneNumber = primaryPhone?.phone_number
+
+    console.log('📱 Extracted phone number:', phoneNumber)
+    console.log('📱 Primary phone object:', primaryPhone)
 
     if (!email) {
       console.error('No email found for user:', id)
