@@ -59,45 +59,56 @@ export default function BlogScreen({
     innerWrapper.style.textAlign = 'left'
     element.appendChild(innerWrapper)
     
-    for (let line of lines) {
-      const lineDiv = document.createElement('div')
-      lineDiv.className = 'terminal-line animate-text'
-      lineDiv.style.color = color
-      lineDiv.textContent = ''
-      innerWrapper.appendChild(lineDiv)
+    const LINES_AT_ONCE = 5
+    const targetDuration = 5000 // 5 seconds total
+    
+    // Process lines in batches of 5
+    for (let batchStart = 0; batchStart < lines.length; batchStart += LINES_AT_ONCE) {
+      const batchEnd = Math.min(batchStart + LINES_AT_ONCE, lines.length)
+      const batchLines = lines.slice(batchStart, batchEnd)
       
-      const cursor = document.createElement('span')
-      cursor.className = 'typing-cursor-live'
-      cursor.style.backgroundColor = color
-      lineDiv.appendChild(cursor)
-      
-      await new Promise<void>(resolve => {
-        let currentText = ''
-        const chars = line.split('')
-        let charIndex = 0
-        
-        const typingInterval = setInterval(() => {
-          if (charIndex < chars.length) {
-            currentText += chars[charIndex]
-            lineDiv.textContent = currentText
-            lineDiv.appendChild(cursor)
-            charIndex++
-          } else {
-            clearInterval(typingInterval)
-            cursor.remove()
-            resolve()
-          }
-        }, 0.5)
-      })
-      
-      if (window.gsap) {
-        window.gsap.to(lineDiv, {
-          opacity: 1,
-          duration: 0.05
-        })
+      // Create divs for this batch
+      const batchDivs: HTMLElement[] = []
+      for (let line of batchLines) {
+        const lineDiv = document.createElement('div')
+        lineDiv.className = 'terminal-line'
+        lineDiv.style.color = color
+        lineDiv.style.opacity = '1'
+        lineDiv.textContent = ''
+        innerWrapper.appendChild(lineDiv)
+        batchDivs.push(lineDiv)
       }
       
-      await new Promise(resolve => setTimeout(resolve, 0))
+      // Calculate timing for this batch
+      const longestLineInBatch = Math.max(...batchLines.map(l => l.length))
+      const totalCharsInAllBatches = lines.reduce((sum, line) => sum + line.length, 0)
+      const charsInThisBatch = batchLines.reduce((sum, line) => sum + line.length, 0)
+      
+      // Proportional time for this batch based on character count
+      const batchDuration = (charsInThisBatch / totalCharsInAllBatches) * targetDuration
+      const msPerChar = batchDuration / longestLineInBatch
+      
+      // Type all lines in this batch simultaneously
+      await new Promise<void>((resolve) => {
+        let charIndex = 0
+        
+        const interval = setInterval(() => {
+          if (charIndex >= longestLineInBatch) {
+            clearInterval(interval)
+            resolve()
+            return
+          }
+          
+          // Update each line in the batch
+          batchLines.forEach((line, lineIdx) => {
+            if (charIndex < line.length) {
+              batchDivs[lineIdx].textContent = line.substring(0, charIndex + 1)
+            }
+          })
+          
+          charIndex++
+        }, msPerChar)
+      })
     }
   }
 
