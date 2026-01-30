@@ -44,25 +44,29 @@ export async function POST(req: Request) {
   const eventType = evt.type
 
   if (eventType === 'user.created' || eventType === 'user.updated') {
-    // DEBUG: Log the entire user data object
-    console.log('🔍 FULL USER DATA:', JSON.stringify(evt.data, null, 2))
-    
     const { id, email_addresses, phone_numbers, first_name, last_name, username } = evt.data
-
-    // DEBUG: Log phone_numbers specifically
-    console.log('📱 Phone numbers array:', phone_numbers)
-    console.log('📱 Primary phone ID:', evt.data.primary_phone_number_id)
 
     // Extract primary email
     const primaryEmail = email_addresses?.find(email => email.id === evt.data.primary_email_address_id)
     const email = primaryEmail?.email_address
 
-    // Extract primary phone number
-    const primaryPhone = phone_numbers?.find(phone => phone.id === evt.data.primary_phone_number_id)
-    const phoneNumber = primaryPhone?.phone_number
+    // Extract phone number - try primary first, then fall back to first available
+    let phoneNumber = null
+    
+    if (evt.data.primary_phone_number_id) {
+      // Try to find by primary ID
+      const primaryPhone = phone_numbers?.find(phone => phone.id === evt.data.primary_phone_number_id)
+      phoneNumber = primaryPhone?.phone_number
+    }
+    
+    // If no primary or primary not found, use the first phone number
+    if (!phoneNumber && phone_numbers && phone_numbers.length > 0) {
+      phoneNumber = phone_numbers[0].phone_number
+    }
 
+    console.log('📱 Phone numbers array:', phone_numbers)
+    console.log('📱 Primary phone ID:', evt.data.primary_phone_number_id)
     console.log('📱 Extracted phone number:', phoneNumber)
-    console.log('📱 Primary phone object:', primaryPhone)
 
     if (!email) {
       console.error('No email found for user:', id)
