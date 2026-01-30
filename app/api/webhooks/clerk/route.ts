@@ -44,11 +44,15 @@ export async function POST(req: Request) {
   const eventType = evt.type
 
   if (eventType === 'user.created' || eventType === 'user.updated') {
-    const { id, email_addresses, first_name, last_name, username } = evt.data
+    const { id, email_addresses, phone_numbers, first_name, last_name, username } = evt.data
 
     // Extract primary email
     const primaryEmail = email_addresses?.find(email => email.id === evt.data.primary_email_address_id)
     const email = primaryEmail?.email_address
+
+    // Extract primary phone number
+    const primaryPhone = phone_numbers?.find(phone => phone.id === evt.data.primary_phone_number_id)
+    const phoneNumber = primaryPhone?.phone_number
 
     if (!email) {
       console.error('No email found for user:', id)
@@ -57,20 +61,22 @@ export async function POST(req: Request) {
 
     console.log('📧 User data from Clerk:', {
       email,
+      phoneNumber: phoneNumber || 'Not provided',
       firstName: first_name,
       lastName: last_name,
       username: username,
     })
 
-    // Prepare GraphQL mutation for Laylo - email only since firstName/lastName aren't supported
+    // Prepare GraphQL mutation for Laylo with phone number
     const graphqlQuery = `
-      mutation($email: String) {
-        subscribeToUser(email: $email)
+      mutation($email: String, $phoneNumber: String) {
+        subscribeToUser(email: $email, phoneNumber: $phoneNumber)
       }
     `
 
     const variables = {
-      email: email
+      email: email,
+      phoneNumber: phoneNumber || null
     }
 
     console.log('🔄 Syncing to Laylo with:', variables)
@@ -104,14 +110,20 @@ export async function POST(req: Request) {
       }
 
       console.log('✅ Successfully synced to Laylo:', layloData)
-      console.log('ℹ️ Note: firstName and lastName collected in Clerk but not sent to Laylo (API limitation)')
+      console.log(phoneNumber 
+        ? '📱 Phone number included in sync' 
+        : 'ℹ️ No phone number provided by user'
+      )
 
       return NextResponse.json({ 
         success: true, 
         message: 'User synced to Laylo',
         subscribed: layloData.data?.subscribeToUser,
         email: email,
-        note: 'firstName and lastName collected but not synced (Laylo API limitation)'
+        phoneNumber: phoneNumber || 'Not provided',
+        note: phoneNumber 
+          ? 'Email and phone number synced successfully' 
+          : 'Email synced, no phone number provided'
       })
 
     } catch (error) {

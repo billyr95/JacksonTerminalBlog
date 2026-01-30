@@ -1,19 +1,8 @@
 /* Custom Font - Place your font files in /public/fonts/ */
 @font-face {
   font-family: 'CustomFont';
-  src: url('/fonts/JDGWiredOS-Square.woff') format('woff'),
-       url('/fonts/your-custom-font.woff') format('woff');
+  src: url('/fonts/JDGWiredOS-Square.woff2') format('woff2');
   font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
-
-/* If you have multiple weights, add more @font-face rules */
-@font-face {
-  font-family: 'CustomFont';
-  src: url('/fonts/your-custom-font-bold.woff2') format('woff2'),
-       url('/fonts/your-custom-font-bold.woff') format('woff');
-  font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
@@ -136,7 +125,7 @@ body:not(.studio-body)::before {
 
 .ascii-art {
   white-space: pre;
-  font-size: 7px;
+  font-size: 5px;
   line-height: 1;
   color: #8bafc2;
   margin-bottom: 20px;
@@ -146,7 +135,7 @@ body:not(.studio-body)::before {
 /* Responsive ASCII art sizing */
 @media (max-width: 1400px) {
   .ascii-art {
-    font-size: 7px;
+    font-size: 5px;
   }
 }
 
@@ -164,7 +153,7 @@ body:not(.studio-body)::before {
 
 @media (max-width: 600px) {
   .ascii-art {
-    font-size: 3.5px;
+    font-size: 2.3px;
   }
   .post-content {
     font-size: 9px;
