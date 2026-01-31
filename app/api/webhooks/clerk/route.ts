@@ -81,23 +81,23 @@ export async function POST(req: Request) {
       username: username,
     })
 
-    // Prepare GraphQL mutation for Laylo with phone number
+    // GraphQL mutation - single identifier only
     const graphqlQuery = `
       mutation($email: String, $phoneNumber: String) {
         subscribeToUser(email: $email, phoneNumber: $phoneNumber)
       }
     `
 
-    const variables = {
-      email: email,
-      phoneNumber: phoneNumber || null
+    const results = {
+      email: { success: false, data: null as any },
+      phone: { success: false, data: null as any }
     }
 
-    console.log('🔄 Syncing to Laylo with:', variables)
-
-    // Send to Laylo using GraphQL
+    // FIRST CALL: Subscribe with email
     try {
-      const layloResponse = await fetch('https://laylo.com/api/graphql', {
+      console.log('🔄 Call 1: Syncing email to Laylo:', email)
+      
+      const emailResponse = await fetch('https://laylo.com/api/graphql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,46 +105,91 @@ export async function POST(req: Request) {
         },
         body: JSON.stringify({
           query: graphqlQuery,
-          variables: variables
+          variables: { email: email, phoneNumber: null }
         }),
       })
 
-      if (!layloResponse.ok) {
-        const errorText = await layloResponse.text()
-        console.error('Laylo API error:', errorText)
-        throw new Error(`Laylo API returned ${layloResponse.status}`)
+      if (!emailResponse.ok) {
+        const errorText = await emailResponse.text()
+        console.error('Laylo email API error:', errorText)
+        throw new Error(`Laylo API returned ${emailResponse.status}`)
       }
 
-      const layloData = await layloResponse.json()
+      const emailData = await emailResponse.json()
       
-      // Check if GraphQL returned errors
-      if (layloData.errors) {
-        console.error('Laylo GraphQL errors:', layloData.errors)
-        throw new Error(`Laylo GraphQL error: ${JSON.stringify(layloData.errors)}`)
+      if (emailData.errors) {
+        console.error('Laylo email GraphQL errors:', emailData.errors)
+        throw new Error(`Laylo GraphQL error: ${JSON.stringify(emailData.errors)}`)
       }
 
-      console.log('✅ Successfully synced to Laylo:', layloData)
-      console.log(phoneNumber 
-        ? '📱 Phone number included in sync' 
-        : 'ℹ️ No phone number provided by user'
-      )
+      console.log('✅ Email successfully synced to Laylo')
+      results.email.success = true
+      results.email.data = emailData
 
+    } catch (error) {
+      console.error('❌ Error syncing email to Laylo:', error)
+      // Continue to try phone even if email fails
+    }
+
+    // SECOND CALL: Subscribe with phone number (if available)
+    if (phoneNumber) {
+      try {
+        console.log('🔄 Call 2: Syncing phone to Laylo:', phoneNumber)
+        
+        const phoneResponse = await fetch('https://laylo.com/api/graphql', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.LAYLO_API_KEY}`,
+          },
+          body: JSON.stringify({
+            query: graphqlQuery,
+            variables: { email: null, phoneNumber: phoneNumber }
+          }),
+        })
+
+        if (!phoneResponse.ok) {
+          const errorText = await phoneResponse.text()
+          console.error('Laylo phone API error:', errorText)
+          throw new Error(`Laylo API returned ${phoneResponse.status}`)
+        }
+
+        const phoneData = await phoneResponse.json()
+        
+        if (phoneData.errors) {
+          console.error('Laylo phone GraphQL errors:', phoneData.errors)
+          throw new Error(`Laylo GraphQL error: ${JSON.stringify(phoneData.errors)}`)
+        }
+
+        console.log('✅ Phone successfully synced to Laylo')
+        results.phone.success = true
+        results.phone.data = phoneData
+
+      } catch (error) {
+        console.error('❌ Error syncing phone to Laylo:', error)
+      }
+    } else {
+      console.log('ℹ️ No phone number to sync')
+    }
+
+    // Return success if at least email succeeded
+    if (results.email.success) {
       return NextResponse.json({ 
         success: true, 
         message: 'User synced to Laylo',
-        subscribed: layloData.data?.subscribeToUser,
-        email: email,
-        phoneNumber: phoneNumber || 'Not provided',
-        note: phoneNumber 
-          ? 'Email and phone number synced successfully' 
-          : 'Email synced, no phone number provided'
+        email: {
+          synced: true,
+          value: email
+        },
+        phone: {
+          synced: results.phone.success,
+          value: phoneNumber || 'Not provided'
+        }
       })
-
-    } catch (error) {
-      console.error('Error syncing to Laylo:', error)
+    } else {
       return NextResponse.json({ 
         error: 'Failed to sync to Laylo',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: 'Email sync failed'
       }, { status: 500 })
     }
   }
