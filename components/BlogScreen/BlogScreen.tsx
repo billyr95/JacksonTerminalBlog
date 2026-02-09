@@ -41,6 +41,12 @@ export default function BlogScreen({
     const initArt = async () => {
       if (!isSecret && typeof window !== 'undefined' && window.gsap && !hasAnimated.current) {
         hasAnimated.current = true
+        
+        // Wait for custom font to load before animating
+        if (document.fonts && document.fonts.ready) {
+          await document.fonts.ready
+        }
+        
         // Animate normal blog ASCII art
         const container = document.getElementById('ascii-art-container')
         if (container && container.children.length === 0) { // Only animate if empty
