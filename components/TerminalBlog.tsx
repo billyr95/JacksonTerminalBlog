@@ -291,7 +291,7 @@ export default function TerminalBlog() {
     <div className="container">
       <div className="terminal-header">
         <div className="terminal-title">
-          TERMINAL BLOG SYSTEM v1.0 | SECURE ACCESS
+          WIRED WORLD
         </div>
       </div>
       

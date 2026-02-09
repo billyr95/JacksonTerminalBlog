@@ -7,8 +7,8 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TERMINAL BLOG v1.0',
-  description: 'A retro terminal-style blog with live coding animation',
+  title: 'WIRED WORLD',
+  description: 'Promotional blog for the band Basement',
 }
 
 export default function RootLayout({
