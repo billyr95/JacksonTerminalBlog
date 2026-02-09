@@ -92,7 +92,7 @@ export default function TerminalBlog() {
   }
 
   const handleInitialLogin = (password: string) => {
-    if (password === 'terminal123') {
+    if (password === 'WIRED') {
       setIsSecret(false)
     } else if (password === 'Winslow') {
       setIsSecret(true)

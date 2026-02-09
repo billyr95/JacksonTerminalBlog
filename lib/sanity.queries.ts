@@ -1,14 +1,21 @@
 import { client } from './sanity.client'
 import { BlogPost } from '@/types'
 
-// Fetch all blog posts
+// Fetch all published blog posts (including scheduled posts that are now live)
 export async function getAllPosts(): Promise<BlogPost[]> {
-  const query = `*[_type == "post"] | order(date desc) {
+  const now = new Date().toISOString()
+  
+  const query = `*[_type == "post" && (
+    status == "published" || 
+    (status == "scheduled" && publishedAt <= $now)
+  )] | order(date desc) {
     _id,
     title,
     author,
     "date": date,
     content,
+    status,
+    publishedAt,
     "heroImage": heroImage.asset->url,
     "heroImageLink": heroImage.link,
     "heroVideo": heroVideo.asset->url,
@@ -75,7 +82,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     }
   }`
   
-  const posts = await client.fetch(query)
+  const posts = await client.fetch(query, { now })
   
   // Recursive function to transform comments at any nesting level
   const transformComments = (comments: any[]): any[] => {
@@ -106,14 +113,21 @@ export async function getAllPosts(): Promise<BlogPost[]> {
   }))
 }
 
-// Fetch all secret blog posts
+// Fetch all published secret blog posts (including scheduled posts that are now live)
 export async function getSecretPosts(): Promise<BlogPost[]> {
-  const query = `*[_type == "secretPost"] | order(date desc) {
+  const now = new Date().toISOString()
+  
+  const query = `*[_type == "secretPost" && (
+    status == "published" || 
+    (status == "scheduled" && publishedAt <= $now)
+  )] | order(date desc) {
     _id,
     title,
     author,
     "date": date,
     content,
+    status,
+    publishedAt,
     "heroImage": heroImage.asset->url,
     "heroImageLink": heroImage.link,
     "heroVideo": heroVideo.asset->url,
@@ -180,7 +194,7 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     }
   }`
   
-  const posts = await client.fetch(query)
+  const posts = await client.fetch(query, { now })
   
   // Recursive function to transform comments at any nesting level
   const transformComments = (comments: any[]): any[] => {

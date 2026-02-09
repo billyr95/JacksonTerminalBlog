@@ -113,44 +113,6 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     errorDiv.className = 'error hidden'
     loginContent.appendChild(errorDiv)
 
-    await new Promise(resolve => setTimeout(resolve, 200))
-    const hintDiv = document.createElement('div')
-    hintDiv.className = 'system-message animate-text'
-    hintDiv.style.marginTop = '30px'
-    loginContent.appendChild(hintDiv)
-    
-    const hintText = 'Hint: The password is "terminal123"'
-    hintDiv.textContent = ''
-    const hintCursor = document.createElement('span')
-    hintCursor.className = 'typing-cursor-live'
-    hintDiv.appendChild(hintCursor)
-    
-    await new Promise<void>(resolve => {
-      let currentText = ''
-      const chars = hintText.split('')
-      let charIndex = 0
-      
-      const typingInterval = setInterval(() => {
-        if (charIndex < chars.length) {
-          currentText += chars[charIndex]
-          hintDiv.innerHTML = '<br>' + currentText
-          hintDiv.appendChild(hintCursor)
-          charIndex++
-        } else {
-          clearInterval(typingInterval)
-          hintCursor.remove()
-          resolve()
-        }
-      }, 15)
-    })
-    
-    if (window.gsap) {
-      window.gsap.to(hintDiv, {
-        opacity: 1,
-        duration: 0.2
-      })
-    }
-
     const passwordInput = document.getElementById('passwordInput') as HTMLInputElement
     if (passwordInput) {
       passwordInput.addEventListener('keypress', (e) => {
@@ -167,7 +129,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     
     if (!passwordInput) return
     
-    if (passwordInput.value === 'terminal123' || passwordInput.value === 'Winslow') {
+    if (passwordInput.value === 'WIRED' || passwordInput.value === 'Winslow') {
       onLogin(passwordInput.value)
     } else {
       if (errorMessage) {

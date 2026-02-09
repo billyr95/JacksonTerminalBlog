@@ -29,9 +29,31 @@ export default defineType({
     }),
     defineField({
       name: 'date',
-      title: 'Date',
+      title: 'Post Date',
       type: 'datetime',
+      description: 'The date this post was written (for display purposes)',
       initialValue: () => new Date().toISOString(),
+    }),
+    defineField({
+      name: 'publishedAt',
+      title: 'Publish Date & Time',
+      type: 'datetime',
+      description: 'Schedule when this post should go live. Leave empty to publish immediately.',
+    }),
+    defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Draft', value: 'draft'},
+          {title: 'Scheduled', value: 'scheduled'},
+          {title: 'Published', value: 'published'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'draft',
+      validation: (Rule) => Rule.required(),
     }),
     defineField({
       name: 'heroImage',
@@ -99,4 +121,38 @@ export default defineType({
       of: [{type: 'comment'}],
     }),
   ],
+  preview: {
+    select: {
+      title: 'title',
+      author: 'author',
+      status: 'status',
+      publishedAt: 'publishedAt',
+      media: 'heroImage',
+    },
+    prepare(selection) {
+      const {title, author, status, publishedAt, media} = selection
+      
+      let subtitle = `by ${author}`
+      if (status === 'scheduled' && publishedAt) {
+        const scheduleDate = new Date(publishedAt).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+        })
+        subtitle += ` • Scheduled for ${scheduleDate}`
+      } else if (status === 'draft') {
+        subtitle += ' • Draft'
+      } else if (status === 'published') {
+        subtitle += ' • Published'
+      }
+      
+      return {
+        title,
+        subtitle,
+        media,
+      }
+    },
+  },
 })
