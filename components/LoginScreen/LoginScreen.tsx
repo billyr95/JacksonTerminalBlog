@@ -33,7 +33,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       'Initializing secure connection...',
       'Connection to Basement established.',
       '',
-      'Enter authorization code to continue:'
+      'Enter authorization code to continue:',
+      'Hint: Need the code? Text us. (617)618-5821'
     ]
     
     for (let msg of systemMessages) {
