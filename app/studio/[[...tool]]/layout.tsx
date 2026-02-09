@@ -1,4 +1,7 @@
 import '../../globals.css'
+import { Inter } from 'next/font/google'
+
+const inter = Inter({ subsets: ['latin'] })
 
 export default function StudioLayout({
   children,
@@ -6,7 +9,7 @@ export default function StudioLayout({
   children: React.ReactNode
 }) {
   return (
-    <body className="studio-body" suppressHydrationWarning>
+    <body className={`studio-body ${inter.className}`} suppressHydrationWarning>
       <style>{`
         .studio-body::before {
           display: none !important;
@@ -15,6 +18,9 @@ export default function StudioLayout({
           margin: 0;
           padding: 0;
           background: #fff;
+        }
+        .studio-body * {
+          font-family: ${inter.style.fontFamily}, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
         }
       `}</style>
       {children}
