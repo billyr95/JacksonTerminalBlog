@@ -101,8 +101,9 @@ export default function BlogPost({
         <video
           controls
           style={{
-            width: '100%',
+            width: 'auto',
             height: 'auto',
+            maxHeight: '600px',
             objectFit: 'cover',
             marginBottom: '20px',
             border: '1px solid #444',
