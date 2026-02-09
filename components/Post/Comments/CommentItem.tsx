@@ -40,7 +40,7 @@ export default function CommentItem({
   // Cap indentation at 4 levels (120px max)
   const maxIndent = 4
   const actualDepth = Math.min(depth, maxIndent)
-  const indentPx = actualDepth * 30
+  const indentPx = actualDepth * 50
 
   // Calculate relative time
   useEffect(() => {
@@ -116,69 +116,41 @@ export default function CommentItem({
         backgroundColor: '#050505'
       }}
     >
+      {/* Username */}
+      <div style={{ 
+        fontWeight: isOwnComment ? 'bold' : 'normal',
+        color: isOwnComment ? '#00ff00' : color,
+        fontSize: '12px',
+        marginBottom: '2px'
+      }}>
+        {comment.author}
+      </div>
+      
+      {/* Timestamp and status */}
       <div style={{ 
         color, 
-        fontSize: '12px', 
-        marginBottom: '5px',
+        fontSize: '10px',
+        marginBottom: '8px',
         display: 'flex',
         alignItems: 'center',
         gap: '8px'
       }}>
-        {/* Collapse/Expand button */}
-        {hasReplies && (
-          <button
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color,
-              cursor: 'pointer',
-              fontSize: '12px',
-              padding: '0',
-              fontWeight: 'bold',
-              width: '16px',
-              textAlign: 'center'
-            }}
-            title={isCollapsed ? 'Expand replies' : 'Collapse replies'}
-          >
-            {isCollapsed ? '[+]' : '[-]'}
-          </button>
+        <span>{relativeTime}</span>
+        {isTemporary && (
+          <span style={{ color: '#888' }}>
+            (saving...)
+          </span>
         )}
-        
-        <div style={{ flex: 1 }}>
-          <span style={{ 
-            fontWeight: isOwnComment ? 'bold' : 'normal',
-            color: isOwnComment ? '#00ff00' : color
-          }}>
-            {comment.author}
-          </span>
-          <span style={{ 
-            color, 
-            marginLeft: '10px', 
-            fontSize: '10px' 
-          }}>
-            {relativeTime}
-          </span>
-          {isTemporary && (
-            <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
-              (saving...)
-            </span>
-          )}
-          {isCollapsed && hasReplies && (
-            <span style={{ color: '#888', fontSize: '10px', marginLeft: '10px' }}>
-              ({totalNestedReplies} {totalNestedReplies === 1 ? 'reply' : 'replies'} hidden)
-            </span>
-          )}
-        </div>
       </div>
       
-      {/* Always show comment text */}
+      {/* Comment text */}
       <div style={{ 
         color, 
         fontSize: '14px',
         wordWrap: 'break-word',
         overflowWrap: 'break-word',
-        whiteSpace: 'pre-wrap'
+        whiteSpace: 'pre-wrap',
+        marginBottom: '8px'
       }}>
         {comment.text}
       </div>
@@ -196,7 +168,6 @@ export default function CommentItem({
                 color,
                 cursor: 'pointer',
                 fontSize: '11px',
-                marginTop: '8px',
                 padding: '0'
               }}
             >
@@ -208,8 +179,7 @@ export default function CommentItem({
           {isTemporary && (
             <div style={{ 
               color: '#888', 
-              fontSize: '10px', 
-              marginTop: '8px',
+              fontSize: '10px',
               fontStyle: 'italic'
             }}>
               Saving comment...
@@ -318,7 +288,6 @@ export default function CommentItem({
                     cursor: 'pointer',
                     fontSize: '11px',
                     marginTop: '8px',
-                    marginLeft: '0px',
                     padding: '0'
                   }}
                 >
@@ -337,13 +306,29 @@ export default function CommentItem({
                     cursor: 'pointer',
                     fontSize: '11px',
                     marginTop: '8px',
-                    marginLeft: '0px',
                     padding: '0'
                   }}
                 >
                   [ SHOW LESS ]
                 </button>
               )}
+              
+              {/* Hide all replies button at the bottom */}
+              <button
+                onClick={() => setIsCollapsed(true)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color,
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  marginTop: '8px',
+                  padding: '0',
+                  display: 'block'
+                }}
+              >
+                [-] HIDE ALL REPLIES
+              </button>
             </div>
           )}
         </>
@@ -351,18 +336,21 @@ export default function CommentItem({
       
       {/* Show collapsed thread preview */}
       {isCollapsed && hasReplies && (
-        <div 
-          style={{ 
-            color: '#888', 
-            fontSize: '11px', 
-            marginTop: '5px',
-            fontStyle: 'italic',
-            cursor: 'pointer'
-          }}
+        <button
           onClick={() => setIsCollapsed(false)}
+          style={{ 
+            background: 'none',
+            border: 'none',
+            color,
+            cursor: 'pointer',
+            fontSize: '11px',
+            marginTop: '5px',
+            padding: '0',
+            display: 'block'
+          }}
         >
-          Click to expand {totalNestedReplies} {totalNestedReplies === 1 ? 'reply' : 'replies'}...
-        </div>
+          [+] SHOW ALL REPLIES ({totalNestedReplies})
+        </button>
       )}
     </div>
   )
