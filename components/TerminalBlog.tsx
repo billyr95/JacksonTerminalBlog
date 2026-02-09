@@ -291,7 +291,7 @@ export default function TerminalBlog() {
     <div className="container">
       <div className="terminal-header">
         <div className="terminal-title">
-          WIRED WORLD
+          BASEMENT
         </div>
       </div>
       
