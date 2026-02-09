@@ -7,8 +7,22 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'WIRED WORLD',
-  description: 'Promotional blog for the band Basement',
+  title: 'TERMINAL BLOG v1.0',
+  description: 'A retro terminal-style blog with live coding animation',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/apple-icon.png',
+  },
+  openGraph: {
+    title: 'TERMINAL BLOG v1.0',
+    description: 'A retro terminal-style blog with live coding animation',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'TERMINAL BLOG v1.0',
+    description: 'A retro terminal-style blog with live coding animation',
+  },
 }
 
 export default function RootLayout({
@@ -25,9 +39,9 @@ export default function RootLayout({
             fontFamily: inter.style.fontFamily,
           },
           formFieldInput: {
-            backgroundColor: '#0a0a0a',
-            borderColor: '#8bafc2',
-            color: '#8bafc2',
+            backgroundColor: '#ffffff',
+            borderColor: '#d1d5db',
+            color: '#000000',
             fontFamily: inter.style.fontFamily,
           },
           formButtonPrimary: {
