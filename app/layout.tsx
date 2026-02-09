@@ -7,20 +7,20 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'WIRED WORLD',
+  title: 'BASEMENT BBS',
   description: 'A retro terminal-style blog',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'WIRED WORLD',
+    title: 'BASEMENT BBS',
     description: 'A retro terminal-style blog',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'WIRED WORLD',
+    title: 'BASEMENT BBS',
     description: 'A retro terminal-style blog',
   },
 }
