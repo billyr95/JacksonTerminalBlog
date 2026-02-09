@@ -53,7 +53,8 @@ export default function CommentList({ comments, color, isLoggedIn, username, onR
             fontSize: '12px',
             marginTop: '15px',
             padding: '8px 16px',
-            fontFamily: "'CustomFont', 'Courier New', monospace"
+            fontFamily: "'CustomFont', 'Courier New', monospace",
+            whiteSpace: 'nowrap'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = color
@@ -80,7 +81,8 @@ export default function CommentList({ comments, color, isLoggedIn, username, onR
             fontSize: '12px',
             marginTop: '15px',
             padding: '8px 16px',
-            fontFamily: "'CustomFont', 'Courier New', monospace"
+            fontFamily: "'CustomFont', 'Courier New', monospace",
+            whiteSpace: 'nowrap'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = color
