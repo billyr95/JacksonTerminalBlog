@@ -31,7 +31,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     const systemMessages = [
       'SYSTEM READY',
       'Initializing secure connection...',
-      'Connection to Basement established.',
+      'Connection to Wired World established.',
       '',
       'Enter authorization code to continue:'
     ]
