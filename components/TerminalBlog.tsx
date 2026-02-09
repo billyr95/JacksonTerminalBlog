@@ -30,6 +30,31 @@ export default function TerminalBlog() {
   // Get username from Clerk - prioritize username field
   const username = user?.username || user?.firstName || user?.emailAddresses[0]?.emailAddress?.split('@')[0] || 'user'
 
+  // Check if user has logged in within the last 5 minutes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const loginData = localStorage.getItem('terminalLogin')
+      
+      if (loginData) {
+        try {
+          const { timestamp, isSecret: savedIsSecret } = JSON.parse(loginData)
+          const fiveMinutes = 5 * 60 * 1000 // 5 minutes in milliseconds
+          const now = Date.now()
+          
+          // If logged in within last 5 minutes, skip login screen
+          if (now - timestamp < fiveMinutes) {
+            setIsSecret(savedIsSecret)
+            setShowLogin(false)
+            setShowBlog(true)
+          }
+        } catch (e) {
+          // Invalid data, clear it
+          localStorage.removeItem('terminalLogin')
+        }
+      }
+    }
+  }, [])
+
   // Apply color theme when blog type changes
   useEffect(() => {
     if (showBlog) {
@@ -92,10 +117,20 @@ export default function TerminalBlog() {
   }
 
   const handleInitialLogin = (password: string) => {
+    const secretMode = password === 'Winslow'
+    
     if (password === '0508') {
       setIsSecret(false)
     } else if (password === 'Winslow') {
       setIsSecret(true)
+    }
+    
+    // Save login to localStorage with timestamp
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('terminalLogin', JSON.stringify({
+        timestamp: Date.now(),
+        isSecret: secretMode
+      }))
     }
     
     setShowLogin(false)
