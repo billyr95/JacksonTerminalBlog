@@ -31,7 +31,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     const systemMessages = [
       'SYSTEM READY',
       'Initializing secure connection...',
-      'Connection to Wired World established.',
+      'Connection to Basement established.',
       '',
       'Enter authorization code to continue:'
     ]
@@ -129,7 +129,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     
     if (!passwordInput) return
     
-    if (passwordInput.value === 'WIRED' || passwordInput.value === 'Winslow') {
+    if (passwordInput.value === '0508' || passwordInput.value === 'Winslow') {
       onLogin(passwordInput.value)
     } else {
       if (errorMessage) {

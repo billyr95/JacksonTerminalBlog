@@ -7,21 +7,21 @@ import { Inter } from 'next/font/google'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TERMINAL BLOG v1.0',
-  description: 'A retro terminal-style blog with live coding animation',
+  title: 'WIRED WORLD',
+  description: 'A retro terminal-style blog',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'TERMINAL BLOG v1.0',
-    description: 'A retro terminal-style blog with live coding animation',
+    title: 'WIRED WORLD',
+    description: 'A retro terminal-style blog',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'TERMINAL BLOG v1.0',
-    description: 'A retro terminal-style blog with live coding animation',
+    title: 'WIRED WORLD',
+    description: 'A retro terminal-style blog',
   },
 }
 
