@@ -5,6 +5,7 @@ const isPublicRoute = createRouteMatcher([
   '/sign-in(.*)',
   '/sign-up(.*)',
   '/api/webhooks(.*)',
+  '/api/comments(.*)',  // ← ADDED THIS LINE - allows guest comments
 ])
 
 export default clerkMiddleware(async (auth, request) => {
