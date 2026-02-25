@@ -61,6 +61,9 @@ export default function LoginSequence({ isSecret, onComplete }: LoginSequencePro
   }
 
   const runSecretSequence = async (container: HTMLElement, scrollToBottom: () => void) => {
+    const greenColor = '#00ff00'
+    const defaultColor = '#8bafc2'
+    
     // Step 1: Initializing
     const loadingDiv = document.createElement('div')
     loadingDiv.className = 'system-message'
@@ -80,32 +83,23 @@ export default function LoginSequence({ isSecret, onComplete }: LoginSequencePro
     clearInterval(ellipsesInterval)
     loadingDiv.textContent = 'Initializing...'
     
-    // Step 2: Initialize Fail
-    await addMessage(container, 'Initialize Fail', '#ff0000', scrollToBottom, 800)
+    // Step 2: Initialize Success (green)
+    await addMessage(container, 'Initialize Success', greenColor, scrollToBottom, 800)
     
-    // Step 3: Accessing backup protocol
-    await addLoadingMessage(container, 'Accessing backup protocol', scrollToBottom, 1500)
+    // Step 3: Connecting to Basement Database
+    await addLoadingMessage(container, 'Connecting to Basement Database', defaultColor, scrollToBottom, 1500)
     
-    // Step 4: Backup protocol failed
-    await addMessage(container, 'Backup protocol failed', '#ff0000', scrollToBottom, 800)
+    // Step 4: Connection Established (green)
+    await addMessage(container, 'Connection Established', greenColor, scrollToBottom, 800)
     
-    // Step 5: Restarting system
-    await addLoadingMessage(container, 'Restarting system', scrollToBottom, 1500)
-    
-    // Step 6: Restart failure
-    await addMessage(container, 'Restart failure', '#ff0000', scrollToBottom, 800)
-    
-    // Step 7: Reconnecting to net
-    await addMessage(container, 'Reconnecting to net', '#8bafc2', scrollToBottom, 500)
-    
-    // Step 8: Random gibberish
+    // Step 5: Random gibberish (data stream)
     await addGibberish(container, scrollToBottom)
     
-    // Step 9: Failed to reconnect
-    await addMessage(container, 'Failed to reconnect', '#ff0000', scrollToBottom, 800)
+    // Step 6: Configuring
+    await addLoadingMessage(container, 'Configuring', defaultColor, scrollToBottom, 1500)
     
-    // Step 10: Emergency shutdown
-    await addMessage(container, 'EMERGENCY SHUTDOWN INITIATED', '#ff0000', scrollToBottom, 1000)
+    // Step 7: Configuration Success (green)
+    await addMessage(container, 'Configuration Success', greenColor, scrollToBottom, 1000)
   }
 
   const addMessage = async (
@@ -130,6 +124,7 @@ export default function LoginSequence({ isSecret, onComplete }: LoginSequencePro
   const addLoadingMessage = async (
     container: HTMLElement,
     baseText: string,
+    color: string,
     scrollToBottom: () => void,
     duration: number
   ) => {
@@ -137,6 +132,7 @@ export default function LoginSequence({ isSecret, onComplete }: LoginSequencePro
     msg.className = 'system-message'
     msg.style.fontSize = '18px'
     msg.style.marginTop = '20px'
+    msg.style.color = color
     msg.textContent = baseText
     container.appendChild(msg)
     scrollToBottom()

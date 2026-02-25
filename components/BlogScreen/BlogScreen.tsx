@@ -123,7 +123,7 @@ export default function BlogScreen({
       <div id="blogScreen">
         <AsciiArt 
           art={artToDisplay}
-          color={isSecret ? '#ff0000' : '#8bafc2'}
+          color={isSecret ? '#00ff00' : '#8bafc2'}
           animated={!isSecret}
         />
         

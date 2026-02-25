@@ -117,11 +117,11 @@ export default function TerminalBlog() {
   }
 
   const handleInitialLogin = (password: string) => {
-    const secretMode = password === 'Winslow'
+    const secretMode = password === 'wired'
     
     if (password === '0508') {
       setIsSecret(false)
-    } else if (password === 'Winslow') {
+    } else if (password === 'wired') {
       setIsSecret(true)
     }
     

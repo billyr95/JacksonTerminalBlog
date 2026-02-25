@@ -130,7 +130,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     
     if (!passwordInput) return
     
-    if (passwordInput.value === '0508' || passwordInput.value === 'Winslow') {
+    if (passwordInput.value === '0508' || passwordInput.value === 'wired') {
       onLogin(passwordInput.value)
     } else {
       if (errorMessage) {
