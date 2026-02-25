@@ -79,6 +79,47 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
       await new Promise(resolve => setTimeout(resolve, msg === '' ? 100 : 150))
     }
 
+    // Add "want more" button with riddle
+    await new Promise(resolve => setTimeout(resolve, 200))
+    const wantMoreContainer = document.createElement('div')
+    wantMoreContainer.style.marginTop = '15px'
+    
+    const wantMoreBtn = document.createElement('button')
+    wantMoreBtn.textContent = '[ WANT MORE? ]'
+    wantMoreBtn.className = 'animate-text'
+    wantMoreBtn.style.fontSize = '12px'
+    wantMoreBtn.style.padding = '4px 8px'
+    
+    const riddleDiv = document.createElement('div')
+    riddleDiv.className = 'system-message'
+    riddleDiv.style.display = 'none'
+    riddleDiv.style.marginTop = '10px'
+    riddleDiv.style.fontSize = '14px'
+    riddleDiv.style.lineHeight = '1.6'
+    riddleDiv.innerHTML = `Live more connected. Ground yourself.<br>We need to be inspired. Your signal was never lost, you just need to be re-_____`
+    
+    wantMoreBtn.onclick = () => {
+      if (riddleDiv.style.display === 'none') {
+        riddleDiv.style.display = 'block'
+        wantMoreBtn.textContent = '[ HIDE ]'
+      } else {
+        riddleDiv.style.display = 'none'
+        wantMoreBtn.textContent = '[ WANT MORE? ]'
+      }
+    }
+    
+    wantMoreContainer.appendChild(wantMoreBtn)
+    wantMoreContainer.appendChild(riddleDiv)
+    loginContent.appendChild(wantMoreContainer)
+    
+    if (window.gsap) {
+      window.gsap.to(wantMoreBtn, {
+        opacity: 1,
+        duration: 0.3,
+        ease: "power2.out"
+      })
+    }
+
     await new Promise(resolve => setTimeout(resolve, 200))
     const inputDiv = document.createElement('div')
     inputDiv.className = 'input-line animate-text'
