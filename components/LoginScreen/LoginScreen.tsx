@@ -96,7 +96,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     riddleDiv.style.marginTop = '10px'
     riddleDiv.style.fontSize = '14px'
     riddleDiv.style.lineHeight = '1.6'
-    riddleDiv.innerHTML = `Live more connected. Ground yourself.<br>We need to be inspired. Your signal was never lost, you just need to be re-_____`
+    riddleDiv.innerHTML = `Live more connected. Ground yourself.<br>We need to be inspired. Your signal was never lost, you just need to be re-_____<br>Enter your answer into the password input`
     
     wantMoreBtn.onclick = () => {
       if (riddleDiv.style.display === 'none') {
