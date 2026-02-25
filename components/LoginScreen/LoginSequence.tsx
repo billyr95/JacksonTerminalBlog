@@ -92,13 +92,16 @@ export default function LoginSequence({ isSecret, onComplete }: LoginSequencePro
     // Step 4: Connection Established (green)
     await addMessage(container, 'Connection Established', greenColor, scrollToBottom, 800)
     
-    // Step 5: Random gibberish (data stream)
+    // Step 5: Encryption initialized
+    await addMessage(container, 'Encryption initialized', defaultColor, scrollToBottom, 600)
+    
+    // Step 6: Random gibberish (data stream)
     await addGibberish(container, scrollToBottom)
     
-    // Step 6: Configuring
+    // Step 7: Configuring
     await addLoadingMessage(container, 'Configuring', defaultColor, scrollToBottom, 1500)
     
-    // Step 7: Configuration Success (green)
+    // Step 8: Configuration Success (green)
     await addMessage(container, 'Configuration Success', greenColor, scrollToBottom, 1000)
   }
 
