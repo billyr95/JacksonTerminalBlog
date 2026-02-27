@@ -55,7 +55,7 @@ export default function BlogPost({
       const youtubeId = getYouTubeId(post.videoUrl)
       if (youtubeId) {
         return (
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '600px' }}>
             <iframe
               src={`https://www.youtube.com/embed/${youtubeId}`}
               style={{
@@ -76,7 +76,7 @@ export default function BlogPost({
       const vimeoId = getVimeoId(post.videoUrl)
       if (vimeoId) {
         return (
-          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden' }}>
+          <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', maxWidth: '600px' }}>
             <iframe
               src={`https://player.vimeo.com/video/${vimeoId}`}
               style={{
@@ -102,6 +102,7 @@ export default function BlogPost({
           controls
           style={{
             width: '100%',
+            maxWidth: '600px',
             height: 'auto',
             maxHeight: '600px',
             objectFit: 'cover',
@@ -126,6 +127,7 @@ export default function BlogPost({
           className="post-hero"
           style={{
             width: '100%',
+            maxWidth: '600px',
             height: 'auto',
             objectFit: 'cover',
             marginBottom: '20px',
