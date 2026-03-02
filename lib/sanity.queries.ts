@@ -16,6 +16,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     content,
     status,
     publishedAt,
+    playCount,
     "heroImage": heroImage.asset->url,
     "heroImageLink": heroImage.link,
     "heroVideo": heroVideo.asset->url,
@@ -113,6 +114,7 @@ export async function getAllPosts(): Promise<BlogPost[]> {
     videoUrl: post.videoUrl || null,
     audioFile: post.audioFile || null,
     audioTitle: post.audioTitle || null,
+    playCount: post.playCount || 0,
     comments: transformComments(post.comments || [])
   }))
 }
@@ -132,6 +134,7 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     content,
     status,
     publishedAt,
+    playCount,
     "heroImage": heroImage.asset->url,
     "heroImageLink": heroImage.link,
     "heroVideo": heroVideo.asset->url,
@@ -229,6 +232,7 @@ export async function getSecretPosts(): Promise<BlogPost[]> {
     videoUrl: post.videoUrl || null,
     audioFile: post.audioFile || null,
     audioTitle: post.audioTitle || null,
+    playCount: post.playCount || 0,
     comments: transformComments(post.comments || [])
   }))
 }

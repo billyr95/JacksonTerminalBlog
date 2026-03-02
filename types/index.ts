@@ -19,6 +19,7 @@ export interface BlogPost {
   videoUrl?: string | null
   audioFile?: string | null
   audioTitle?: string | null
+  playCount?: number
   comments: Comment[]
 }
 
