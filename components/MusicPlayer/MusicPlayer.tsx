@@ -6,15 +6,49 @@ interface MusicPlayerProps {
   audioUrl: string
   title?: string
   color: string
+  postId?: string
 }
 
-export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps) {
+export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [volume, setVolume] = useState(0.7)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [listenCount, setListenCount] = useState(0)
+  const [isOverloaded, setIsOverloaded] = useState(false)
+  const [isLoadingCount, setIsLoadingCount] = useState(true)
+  const hasCountedPlay = useRef(false)
+  
+  const MAX_LISTENS = 30000
+
+  // Fetch global play count on mount
+  useEffect(() => {
+    const fetchPlayCount = async () => {
+      if (!postId) {
+        setIsLoadingCount(false)
+        return
+      }
+
+      try {
+        const response = await fetch(`/api/plays?postId=${postId}`)
+        if (response.ok) {
+          const data = await response.json()
+          setListenCount(data.playCount || 0)
+          if (data.playCount >= MAX_LISTENS) {
+            setIsOverloaded(true)
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching play count:', error)
+      } finally {
+        setIsLoadingCount(false)
+      }
+    }
+
+    fetchPlayCount()
+  }, [postId])
 
   useEffect(() => {
     const audio = audioRef.current
@@ -32,22 +66,68 @@ export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps
     const handleEnded = () => {
       setIsPlaying(false)
       setCurrentTime(0)
+      hasCountedPlay.current = false
+    }
+
+    const handlePlay = async () => {
+      // Count a listen when playback starts (only once per play session)
+      if (!hasCountedPlay.current && !isOverloaded && postId) {
+        hasCountedPlay.current = true
+        
+        // Optimistically update the UI
+        const newCount = listenCount + 1
+        setListenCount(newCount)
+        
+        // Check if we've hit the limit
+        if (newCount >= MAX_LISTENS) {
+          setIsOverloaded(true)
+          audio.pause()
+          setIsPlaying(false)
+        }
+
+        // Save to Sanity
+        try {
+          const response = await fetch('/api/plays', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ postId })
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            // Update with the actual count from server
+            setListenCount(data.playCount)
+            if (data.playCount >= MAX_LISTENS) {
+              setIsOverloaded(true)
+              audio.pause()
+              setIsPlaying(false)
+            }
+          }
+        } catch (error) {
+          console.error('Error incrementing play count:', error)
+        }
+      }
     }
 
     audio.addEventListener('loadedmetadata', handleLoadedMetadata)
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('play', handlePlay)
 
     return () => {
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
       audio.removeEventListener('timeupdate', handleTimeUpdate)
       audio.removeEventListener('ended', handleEnded)
+      audio.removeEventListener('play', handlePlay)
     }
-  }, [])
+  }, [listenCount, isOverloaded, postId])
 
   const togglePlay = () => {
     const audio = audioRef.current
     if (!audio) return
+
+    // Don't allow play if overloaded
+    if (isOverloaded) return
 
     if (isPlaying) {
       audio.pause()
@@ -59,7 +139,7 @@ export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps
 
   const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
     const audio = audioRef.current
-    if (!audio || !duration) return
+    if (!audio || !duration || isOverloaded) return
 
     const rect = e.currentTarget.getBoundingClientRect()
     const clickX = e.clientX - rect.left
@@ -130,6 +210,16 @@ export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps
         &gt; AUDIO PLAYER {title && `// ${title}`}
       </div>
 
+      {/* Listen Counter */}
+      <div style={{ 
+        color, 
+        fontSize: '12px', 
+        marginBottom: '10px',
+        fontFamily: "'CustomFont', 'Courier New', monospace"
+      }}>
+        PLAYS: {isLoadingCount ? '...' : `${listenCount}/${MAX_LISTENS}`}
+      </div>
+
       {/* Main Controls Row */}
       <div style={{ 
         display: 'flex', 
@@ -140,20 +230,20 @@ export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps
         {/* Play/Pause Button */}
         <button
           onClick={togglePlay}
-          disabled={!isLoaded}
+          disabled={!isLoaded || isOverloaded}
           style={{
             backgroundColor: 'transparent',
             border: `1px solid ${color}`,
             color,
             padding: '8px 12px',
-            cursor: isLoaded ? 'pointer' : 'not-allowed',
+            cursor: isLoaded && !isOverloaded ? 'pointer' : 'not-allowed',
             fontFamily: "'CustomFont', 'Courier New', monospace",
             fontSize: '14px',
             minWidth: '80px',
-            opacity: isLoaded ? 1 : 0.5
+            opacity: isLoaded && !isOverloaded ? 1 : 0.5
           }}
           onMouseEnter={(e) => {
-            if (isLoaded) {
+            if (isLoaded && !isOverloaded) {
               e.currentTarget.style.backgroundColor = color
               e.currentTarget.style.color = '#000'
             }
@@ -189,11 +279,12 @@ export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps
         <div
           onClick={handleSeek}
           style={{
-            cursor: 'pointer',
+            cursor: isOverloaded ? 'not-allowed' : 'pointer',
             backgroundColor: '#111',
             padding: '5px 8px',
             border: `1px solid ${color}33`,
-            userSelect: 'none'
+            userSelect: 'none',
+            opacity: isOverloaded ? 0.5 : 1
           }}
         >
           <span style={{ 
@@ -250,8 +341,21 @@ export default function MusicPlayer({ audioUrl, title, color }: MusicPlayerProps
         borderTop: `1px solid ${color}33`,
         paddingTop: '8px'
       }}>
-        STATUS: {!isLoaded ? 'LOADING...' : isPlaying ? 'PLAYING' : 'READY'}
+        STATUS: {!isLoaded ? 'LOADING...' : isOverloaded ? 'OVERLOADED' : isPlaying ? 'PLAYING' : 'READY'}
       </div>
+
+      {/* Overload Error Message */}
+      {isOverloaded && (
+        <div style={{
+          color: '#ff0000',
+          fontSize: '12px',
+          marginTop: '10px',
+          fontFamily: "'CustomFont', 'Courier New', monospace",
+          textTransform: 'lowercase'
+        }}>
+          failed to play song. system overload
+        </div>
+      )}
     </div>
   )
 }

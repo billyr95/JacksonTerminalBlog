@@ -176,6 +176,7 @@ export default function BlogPost({
           audioUrl={post.audioFile}
           title={post.audioTitle || post.title}
           color={color}
+          postId={post._id}
         />
       )}
       

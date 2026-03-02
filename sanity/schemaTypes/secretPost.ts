@@ -126,6 +126,14 @@ export default defineType({
       ]
     }),
     defineField({
+      name: 'playCount',
+      title: 'Play Count',
+      type: 'number',
+      description: 'Number of times the audio has been played (auto-tracked)',
+      initialValue: 0,
+      readOnly: true,
+    }),
+    defineField({
       name: 'content',
       title: 'Content',
       type: 'text',
