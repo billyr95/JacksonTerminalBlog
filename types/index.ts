@@ -17,6 +17,8 @@ export interface BlogPost {
   heroImageLink?: string | null
   heroVideo?: string | null
   videoUrl?: string | null
+  audioFile?: string | null
+  audioTitle?: string | null
   comments: Comment[]
 }
 

@@ -109,6 +109,23 @@ export default defineType({
       })
     }),
     defineField({
+      name: 'audioFile',
+      title: 'Audio File (MP3)',
+      type: 'file',
+      description: 'Upload an MP3 file to display a custom music player',
+      options: {
+        accept: 'audio/*'
+      },
+      fields: [
+        {
+          name: 'title',
+          type: 'string',
+          title: 'Track Title',
+          description: 'Display name for the audio track',
+        }
+      ]
+    }),
+    defineField({
       name: 'content',
       title: 'Content',
       type: 'text',

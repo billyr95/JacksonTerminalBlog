@@ -5,6 +5,7 @@ import PostHeader from './PostHeader'
 import PostContent from './PostContent'
 import CommentList from './Comments/CommentList'
 import AddComment from './Comments/AddComment'
+import MusicPlayer from '../MusicPlayer/MusicPlayer'
 
 interface BlogPostProps {
   post: BlogPostType
@@ -168,6 +169,15 @@ export default function BlogPost({
       }}
     >
       {renderMedia()}
+      
+      {/* Audio Player - show if post has audio */}
+      {post.audioFile && (
+        <MusicPlayer 
+          audioUrl={post.audioFile}
+          title={post.audioTitle || post.title}
+          color={color}
+        />
+      )}
       
       <PostHeader 
         title={post.title}
