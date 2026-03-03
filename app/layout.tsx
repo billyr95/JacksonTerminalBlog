@@ -8,20 +8,20 @@ import { Analytics } from '@vercel/analytics/react'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'BASEMENT BBS',
+  title: 'WIRED-WORLD',
   description: 'A retro terminal-style blog',
   icons: {
     icon: '/favicon.ico',
     apple: '/apple-icon.png',
   },
   openGraph: {
-    title: 'BASEMENT BBS',
+    title: 'WIRED-WORLD',
     description: 'A retro terminal-style blog',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'BASEMENT BBS',
+    title: 'WIRED-WORLD',
     description: 'A retro terminal-style blog',
   },
 }
