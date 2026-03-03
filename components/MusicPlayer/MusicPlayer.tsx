@@ -244,8 +244,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       <div style={{ 
         display: 'flex', 
         alignItems: 'center', 
-        justifyContent: 'space-between',
-        gap: '10px',
+        gap: isMobile ? '10px' : '15px',
         marginBottom: '10px'
       }}>
         {/* Play/Pause Button */}
