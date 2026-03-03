@@ -19,9 +19,21 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
   const [listenCount, setListenCount] = useState(0)
   const [isOverloaded, setIsOverloaded] = useState(false)
   const [isLoadingCount, setIsLoadingCount] = useState(true)
+  const [isMobile, setIsMobile] = useState(false)
   const hasCountedPlay = useRef(false)
   
   const MAX_LISTENS = 30000
+
+  // Check for mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 600)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   // Fetch global play count on mount
   useEffect(() => {
@@ -172,15 +184,17 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
 
   const progressPercent = duration ? (currentTime / duration) * 100 : 0
 
-  // Generate ASCII progress bar - shorter width
-  const generateProgressBar = (percent: number, width: number = 20): string => {
+  // Generate ASCII progress bar - responsive width
+  const generateProgressBar = (percent: number): string => {
+    const width = isMobile ? 18 : 30
     const filled = Math.floor((percent / 100) * width)
     const empty = width - filled
     return '█'.repeat(filled) + '░'.repeat(empty)
   }
 
-  // Generate volume bar
-  const generateVolumeBar = (vol: number, width: number = 6): string => {
+  // Generate volume bar - responsive width
+  const generateVolumeBar = (vol: number): string => {
+    const width = isMobile ? 6 : 8
     const filled = Math.floor(vol * width)
     const empty = width - filled
     return '█'.repeat(filled) + '░'.repeat(empty)
@@ -191,9 +205,9 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       style={{
         backgroundColor: '#0a0a0a',
         border: `1px solid ${color}`,
-        padding: '15px',
+        padding: isMobile ? '12px' : '15px',
         marginBottom: '20px',
-        maxWidth: '400px',
+        maxWidth: isMobile ? '100%' : '600px',
         width: '100%',
         fontFamily: "'CustomFont', 'Courier New', monospace",
         boxSizing: 'border-box',
@@ -205,7 +219,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       {/* Header */}
       <div style={{ 
         color, 
-        fontSize: '10px', 
+        fontSize: isMobile ? '10px' : '12px', 
         marginBottom: '10px',
         borderBottom: `1px solid ${color}`,
         paddingBottom: '8px',
@@ -219,7 +233,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       {/* Listen Counter */}
       <div style={{ 
         color, 
-        fontSize: '11px', 
+        fontSize: isMobile ? '11px' : '12px', 
         marginBottom: '10px',
         fontFamily: "'CustomFont', 'Courier New', monospace"
       }}>
@@ -242,10 +256,10 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
             backgroundColor: 'transparent',
             border: `1px solid ${color}`,
             color,
-            padding: '6px 10px',
+            padding: isMobile ? '6px 10px' : '8px 12px',
             cursor: isLoaded && !isOverloaded ? 'pointer' : 'not-allowed',
             fontFamily: "'CustomFont', 'Courier New', monospace",
-            fontSize: '11px',
+            fontSize: isMobile ? '11px' : '14px',
             opacity: isLoaded && !isOverloaded ? 1 : 0.5,
             whiteSpace: 'nowrap',
             flexShrink: 0
@@ -267,7 +281,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
         {/* Time Display */}
         <div style={{ 
           color, 
-          fontSize: '11px',
+          fontSize: isMobile ? '11px' : '12px',
           fontFamily: "'CustomFont', 'Courier New', monospace",
           whiteSpace: 'nowrap',
           flexShrink: 0
@@ -280,7 +294,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       <div style={{ marginBottom: '10px' }}>
         <div style={{ 
           color, 
-          fontSize: '9px', 
+          fontSize: isMobile ? '9px' : '10px', 
           marginBottom: '4px' 
         }}>
           PROGRESS:
@@ -299,8 +313,8 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
         >
           <span style={{ 
             color, 
-            fontSize: '10px',
-            letterSpacing: '0px',
+            fontSize: isMobile ? '10px' : '12px',
+            letterSpacing: isMobile ? '0px' : '1px',
             fontFamily: "'CustomFont', 'Courier New', monospace",
             display: 'block',
             overflow: 'hidden'
@@ -311,10 +325,10 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       </div>
 
       {/* Volume Control */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '10px' }}>
         <div style={{ 
           color, 
-          fontSize: '9px',
+          fontSize: isMobile ? '9px' : '10px',
           flexShrink: 0
         }}>
           VOL:
@@ -324,15 +338,15 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
           style={{
             cursor: 'pointer',
             backgroundColor: '#111',
-            padding: '4px 6px',
+            padding: isMobile ? '4px 6px' : '5px 8px',
             border: `1px solid ${color}33`,
             userSelect: 'none'
           }}
         >
           <span style={{ 
             color, 
-            fontSize: '10px',
-            letterSpacing: '0px',
+            fontSize: isMobile ? '10px' : '12px',
+            letterSpacing: isMobile ? '0px' : '1px',
             fontFamily: "'CustomFont', 'Courier New', monospace"
           }}>
             [{generateVolumeBar(volume)}]
@@ -340,7 +354,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
         </div>
         <div style={{ 
           color, 
-          fontSize: '9px'
+          fontSize: isMobile ? '9px' : '10px'
         }}>
           {Math.round(volume * 100)}%
         </div>
@@ -349,7 +363,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       {/* Status Line */}
       <div style={{ 
         color: color + '88', 
-        fontSize: '9px', 
+        fontSize: isMobile ? '9px' : '10px', 
         marginTop: '10px',
         borderTop: `1px solid ${color}33`,
         paddingTop: '8px'
@@ -361,7 +375,7 @@ export default function MusicPlayer({ audioUrl, title, color, postId }: MusicPla
       {isOverloaded && (
         <div style={{
           color: '#ff0000',
-          fontSize: '10px',
+          fontSize: isMobile ? '10px' : '12px',
           marginTop: '10px',
           fontFamily: "'CustomFont', 'Courier New', monospace",
           textTransform: 'lowercase'
