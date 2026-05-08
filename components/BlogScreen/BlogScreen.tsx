@@ -39,17 +39,33 @@ export default function BlogScreen({
 
   useEffect(() => {
     const initArt = async () => {
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 600
+
       if (!isSecret && typeof window !== 'undefined' && window.gsap && !hasAnimated.current) {
         hasAnimated.current = true
-        
+
+        // Skip animation on mobile — render instantly
+        if (isMobile) {
+          const container = document.getElementById('ascii-art-container')
+          if (container && container.children.length === 0) {
+            const innerWrapper = document.createElement('div')
+            innerWrapper.style.textAlign = 'left'
+            innerWrapper.style.color = '#8bafc2'
+            innerWrapper.style.whiteSpace = 'pre'
+            innerWrapper.textContent = asciiArt
+            container.appendChild(innerWrapper)
+          }
+          return
+        }
+
         // Wait for custom font to load before animating
         if (document.fonts && document.fonts.ready) {
           await document.fonts.ready
         }
-        
+
         // Animate normal blog ASCII art
         const container = document.getElementById('ascii-art-container')
-        if (container && container.children.length === 0) { // Only animate if empty
+        if (container && container.children.length === 0) {
           const lines = asciiArt.trim().split('\n')
           await typeWriter(container, lines)
         }
@@ -119,7 +135,7 @@ export default function BlogScreen({
   }
 
   return (
-    <div className="blog-screen">
+    <div className="blog-screen" style={{ overflowX: 'hidden', maxWidth: '100vw' }}>
       <div id="blogScreen">
         <AsciiArt 
           art={artToDisplay}
